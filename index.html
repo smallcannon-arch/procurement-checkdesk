@@ -1,0 +1,5056 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>政府採購流程查核系統 v0.9-dev</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #5f6875;
+      --soft: #7a8491;
+      --line: #d9ded8;
+      --line-strong: #bdc7c3;
+      --paper: #fffdf7;
+      --panel: #f7f3e9;
+      --navy: #173a5e;
+      --navy-deep: #10243a;
+      --moss: #526b58;
+      --amber: #b78538;
+      --brick: #985847;
+      --blue-soft: #e8eef3;
+      --moss-soft: #e8ede5;
+      --amber-soft: #f4ead8;
+      --brick-soft: #f1e1dc;
+      --shadow: 0 18px 45px rgba(23, 32, 51, .10);
+      --radius: 8px;
+      --max: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(23, 58, 94, .04) 1px, transparent 1px),
+        linear-gradient(180deg, #faf7ef 0%, #fffdf7 34%, #f3f0e7 100%);
+      background-size: 42px 42px, auto;
+      font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .top-band {
+      border-bottom: 1px solid rgba(23, 58, 94, .16);
+      background: rgba(255, 253, 247, .92);
+    }
+
+    .hero {
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+      padding: 30px 0 24px;
+    }
+
+    .hero-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 8px;
+      color: var(--moss);
+      font-size: .9rem;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--moss);
+      border-radius: 50%;
+      background: var(--paper);
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: clamp(2rem, 5vw, 3.55rem);
+      line-height: 1.12;
+      letter-spacing: 0;
+      font-weight: 850;
+    }
+
+    .subtitle {
+      max-width: 780px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 1.08rem;
+    }
+
+    .pill {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 7px 14px;
+      border: 1px solid rgba(82, 107, 88, .35);
+      border-radius: 999px;
+      background: var(--moss-soft);
+      color: #2d4f38;
+      font-size: .9rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .brief,
+    .thresholds {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, .84);
+      box-shadow: 0 10px 24px rgba(23, 32, 51, .06);
+    }
+
+    .brief {
+      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .brief-item {
+      min-width: 0;
+      border-left: 3px solid var(--amber);
+      padding-left: 12px;
+    }
+
+    .brief-item strong,
+    .threshold-title {
+      display: block;
+      color: var(--navy);
+      font-size: .95rem;
+      line-height: 1.35;
+    }
+
+    .brief-item span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: .92rem;
+      line-height: 1.55;
+    }
+
+    .thresholds {
+      padding: 16px;
+    }
+
+    .threshold-title {
+      margin-bottom: 10px;
+    }
+
+    .threshold-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .threshold-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 10px;
+      border: 1px solid #e3ded1;
+      border-radius: 6px;
+      background: #fffaf0;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .threshold-list b {
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    main {
+      width: min(var(--max), calc(100% - 40px));
+      margin: 26px auto 34px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 305px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 16px;
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, .94);
+      box-shadow: var(--shadow);
+    }
+
+    .sidebar-header {
+      padding: 18px 18px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #f8f4eb;
+    }
+
+    .sidebar-header h2 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1rem;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    .sidebar-header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .nav-groups {
+      padding: 12px;
+    }
+
+    .nav-group + .nav-group {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .nav-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 8px;
+      color: var(--moss);
+      font-size: .86rem;
+      font-weight: 850;
+    }
+
+    .nav-title::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--amber);
+    }
+
+    .step-link {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 8px;
+      width: 100%;
+      min-height: 44px;
+      margin: 4px 0;
+      padding: 8px 10px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--ink);
+      text-align: left;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .step-link:hover,
+    .step-link:focus-visible,
+    .step-link.is-active {
+      border-color: rgba(23, 58, 94, .26);
+      background: var(--blue-soft);
+      outline: none;
+    }
+
+    .step-code {
+      color: var(--navy);
+      font-size: .83rem;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .step-name {
+      color: var(--ink);
+      font-size: .9rem;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .content {
+      display: grid;
+      gap: 18px;
+    }
+
+    .section-marker {
+      margin: 6px 0 -2px;
+      color: var(--navy-deep);
+      font-size: 1.08rem;
+      font-weight: 850;
+      letter-spacing: 0;
+    }
+
+    .card {
+      scroll-margin-top: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, .96);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      padding: 22px 24px 16px;
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(232, 238, 243, .68), rgba(255, 253, 247, .95));
+    }
+
+    .card-code {
+      display: inline-flex;
+      align-items: center;
+      width: max-content;
+      margin-bottom: 8px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--navy);
+      color: #fffdf7;
+      font-size: .8rem;
+      font-weight: 850;
+      line-height: 1.2;
+    }
+
+    .card h3 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1.46rem;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .summary {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: .98rem;
+    }
+
+    .tags {
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 9px;
+      border: 1px solid rgba(82, 107, 88, .28);
+      border-radius: 999px;
+      background: #f8f5ec;
+      color: var(--moss);
+      font-size: .8rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .tag.is-amount {
+      border-color: rgba(183, 133, 56, .32);
+      background: var(--amber-soft);
+      color: #765320;
+    }
+
+    .tag.is-risk {
+      border-color: rgba(152, 88, 71, .30);
+      background: var(--brick-soft);
+      color: #743a2e;
+    }
+
+    .card-body {
+      padding: 20px 24px 24px;
+    }
+
+    .fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: .94rem;
+      font-weight: 850;
+      line-height: 1.35;
+    }
+
+    .field-title::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border: 2px solid currentColor;
+      border-radius: 2px;
+      transform: rotate(45deg);
+    }
+
+    .field ul {
+      display: grid;
+      gap: 7px;
+      margin: 0;
+      padding-left: 1.15em;
+      color: var(--muted);
+      font-size: .93rem;
+    }
+
+    .amount-tool {
+      margin: 20px 0 4px;
+      padding: 18px;
+      border: 1px solid rgba(23, 58, 94, .18);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #f8f4eb, #fffdf7);
+    }
+
+    .amount-tool-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .amount-tool h4 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1.08rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .amount-tool-note {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .amount-form {
+      display: grid;
+      grid-template-columns: minmax(160px, .7fr) minmax(220px, 1fr);
+      gap: 12px;
+      align-items: end;
+    }
+
+    .amount-field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .amount-field label {
+      color: var(--navy);
+      font-size: .88rem;
+      font-weight: 850;
+    }
+
+    .amount-field select,
+    .amount-field input {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      background: #fffdf7;
+      color: var(--ink);
+      padding: 8px 10px;
+      outline: none;
+    }
+
+    .amount-field select:focus,
+    .amount-field input:focus {
+      border-color: rgba(23, 58, 94, .62);
+      box-shadow: 0 0 0 3px rgba(23, 58, 94, .12);
+    }
+
+    .amount-unit {
+      color: var(--soft);
+      font-size: .84rem;
+    }
+
+    .amount-result {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid #ded7c8;
+      border-left: 4px solid var(--moss);
+      border-radius: 6px;
+      background: #fffaf0;
+    }
+
+    .amount-result.is-warning {
+      border-left-color: var(--amber);
+    }
+
+    .amount-result.is-audit {
+      border-left-color: var(--brick);
+      background: #fff7f4;
+    }
+
+    .amount-result-title {
+      margin: 0 0 8px;
+      color: var(--navy-deep);
+      font-size: 1rem;
+      font-weight: 850;
+      line-height: 1.35;
+    }
+
+    .amount-result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .amount-result-item {
+      margin: 0;
+      color: var(--muted);
+      font-size: .91rem;
+    }
+
+    .amount-result-item strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--navy);
+      font-size: .84rem;
+    }
+
+    .amount-guidance {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .amount-info-card {
+      min-width: 0;
+      padding: 13px;
+      border: 1px solid #ded7c8;
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .86);
+    }
+
+    .amount-info-card h5 {
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: .95rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .basis-list {
+      display: grid;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .basis-list li {
+      display: grid;
+      grid-template-columns: 118px minmax(0, 1fr);
+      gap: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(217, 222, 216, .74);
+    }
+
+    .basis-list li:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .basis-list strong {
+      color: var(--navy-deep);
+      font-size: .86rem;
+    }
+
+    .next-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 0 0 10px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .next-list li {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      max-width: 100%;
+      padding: 5px 9px;
+      border: 1px solid rgba(23, 58, 94, .16);
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--navy);
+      font-size: .84rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .next-list li.is-guide {
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .next-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .risk-situations {
+      margin-top: 12px;
+      padding: 13px;
+      border: 1px solid #ded7c8;
+      border-radius: 6px;
+      background: rgba(232, 238, 243, .46);
+    }
+
+    .risk-situations h5 {
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: .95rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .risk-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding-left: 1.15em;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .risk-list li::marker {
+      color: var(--moss);
+    }
+
+    .risk-list strong {
+      color: var(--navy-deep);
+    }
+
+    .consistency-tool {
+      margin: 20px 0 4px;
+      padding: 18px;
+      border: 1px solid rgba(23, 58, 94, .18);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #f8f4eb, #fffdf7);
+    }
+
+    .consistency-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .consistency-head h4 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1.08rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .consistency-note {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .consistency-count {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 5px 10px;
+      border: 1px solid rgba(82, 107, 88, .26);
+      border-radius: 999px;
+      background: var(--moss-soft);
+      color: var(--moss);
+      font-size: .86rem;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .consistency-groups {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .consistency-group {
+      min-width: 0;
+      padding: 13px;
+      border: 1px solid #ded7c8;
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .86);
+    }
+
+    .consistency-group h5 {
+      margin: 0 0 9px;
+      color: var(--navy);
+      font-size: .95rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .check-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .check-list label {
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.55;
+      cursor: pointer;
+    }
+
+    .check-list input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      margin: 3px 0 0;
+      accent-color: var(--navy);
+      cursor: pointer;
+    }
+
+    .consistency-status {
+      margin-top: 12px;
+      padding: 12px 13px;
+      border: 1px solid #ded7c8;
+      border-left: 4px solid var(--amber);
+      border-radius: 6px;
+      background: #fffaf0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .consistency-status.is-complete {
+      border-left-color: var(--moss);
+      background: var(--moss-soft);
+    }
+
+    .consistency-status strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--navy-deep);
+      font-size: .94rem;
+    }
+
+    .tender-tool {
+      margin: 20px 0 4px;
+      padding: 18px;
+      border: 1px solid rgba(23, 58, 94, .18);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #f8f4eb, #fffdf7);
+    }
+
+    .tender-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .tender-head h4 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1.08rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .tender-note {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .tender-local-note {
+      margin: 8px 0 0;
+      padding: 9px 10px;
+      border: 1px solid #ded7c8;
+      border-radius: 6px;
+      background: rgba(232, 238, 243, .46);
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.55;
+    }
+
+    .tender-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .tender-field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .tender-field label,
+    .special-title {
+      color: var(--navy);
+      font-size: .88rem;
+      font-weight: 850;
+    }
+
+    .tender-field select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      background: #fffdf7;
+      color: var(--ink);
+      padding: 8px 10px;
+      outline: none;
+    }
+
+    .tender-field select:focus {
+      border-color: rgba(23, 58, 94, .62);
+      box-shadow: 0 0 0 3px rgba(23, 58, 94, .12);
+    }
+
+    .special-panel {
+      padding: 13px;
+      border: 1px solid #ded7c8;
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .86);
+    }
+
+    .special-title {
+      margin: 0 0 8px;
+    }
+
+    .special-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .special-grid label {
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.55;
+      cursor: pointer;
+    }
+
+    .special-grid input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      margin: 3px 0 0;
+      accent-color: var(--navy);
+      cursor: pointer;
+    }
+
+    .tender-result {
+      margin-top: 12px;
+      padding: 14px;
+      border: 1px solid #ded7c8;
+      border-left: 4px solid var(--moss);
+      border-radius: 6px;
+      background: #fffaf0;
+    }
+
+    .tender-result h5 {
+      margin: 0 0 8px;
+      color: var(--navy-deep);
+      font-size: 1rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .tender-result-grid {
+      display: grid;
+      grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
+      gap: 12px;
+    }
+
+    .tender-result-card {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid rgba(222, 215, 200, .92);
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .82);
+    }
+
+    .tender-result-card h6 {
+      margin: 0 0 7px;
+      color: var(--navy);
+      font-size: .9rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .tender-result-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .tender-result-card ul {
+      display: grid;
+      gap: 6px;
+      margin: 0;
+      padding-left: 1.15em;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .tender-result-card li::marker {
+      color: var(--moss);
+    }
+
+    .special-reminders {
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid rgba(222, 215, 200, .92);
+      border-radius: 6px;
+      background: rgba(232, 238, 243, .46);
+    }
+
+    .special-reminders h6 {
+      margin: 0 0 7px;
+      color: var(--navy);
+      font-size: .9rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .special-reminders ul {
+      display: grid;
+      gap: 7px;
+      margin: 0;
+      padding-left: 1.15em;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .price-tool {
+      margin: 20px 0 4px;
+      padding: 18px;
+      border: 1px solid rgba(23, 58, 94, .18);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #f8f4eb, #fffdf7);
+    }
+
+    .price-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .price-head h4 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1.05rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .price-note {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .price-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .price-field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .price-field label,
+    .review-panel h5 {
+      color: var(--navy);
+      font-size: .88rem;
+      font-weight: 850;
+    }
+
+    .price-field select {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 10px;
+      border: 1px solid #d7cfbf;
+      border-radius: 6px;
+      background: #fffdf7;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    .review-panel {
+      margin: 0 0 12px;
+      padding: 12px;
+      border: 1px solid rgba(222, 215, 200, .92);
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .76);
+    }
+
+    .review-panel h5 {
+      margin: 0 0 8px;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .review-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .review-grid label {
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      color: #343c49;
+      font-size: .88rem;
+      line-height: 1.5;
+      cursor: pointer;
+    }
+
+    .review-grid input {
+      width: 16px;
+      height: 16px;
+      margin-top: 3px;
+      accent-color: var(--navy);
+    }
+
+    .price-result {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .price-result-card {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid rgba(222, 215, 200, .92);
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .86);
+    }
+
+    .price-result-card.full {
+      grid-column: 1 / -1;
+    }
+
+    .price-result-card h5 {
+      margin: 0 0 7px;
+      color: var(--navy);
+      font-size: .92rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .price-result-card p {
+      margin: 0;
+      color: #46505d;
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    .price-result-card ul {
+      display: grid;
+      gap: 7px;
+      margin: 0;
+      padding-left: 1.05rem;
+      color: #46505d;
+      font-size: .9rem;
+      line-height: 1.55;
+    }
+
+    .price-result-card.is-risk {
+      border-left: 4px solid var(--amber);
+      background: rgba(232, 238, 243, .46);
+    }
+
+    .classification-tool {
+      margin: 20px 0 4px;
+      padding: 18px;
+      border: 1px solid rgba(23, 58, 94, .18);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #f8f4eb, #fffdf7);
+    }
+
+    .classification-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .classification-head h4 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1.08rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .classification-note {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .classification-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .classification-group,
+    .classification-budget,
+    .classification-result {
+      min-width: 0;
+      padding: 13px;
+      border: 1px solid #ded7c8;
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .86);
+    }
+
+    .classification-group h5,
+    .classification-budget h5,
+    .classification-result h5 {
+      margin: 0 0 9px;
+      color: var(--navy);
+      font-size: .95rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .classification-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .classification-list label {
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.55;
+      cursor: pointer;
+    }
+
+    .classification-list input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      margin: 3px 0 0;
+      accent-color: var(--navy);
+      cursor: pointer;
+    }
+
+    .budget-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .budget-field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .budget-field label {
+      color: var(--navy);
+      font-size: .88rem;
+      font-weight: 850;
+    }
+
+    .budget-field input {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      background: #fffdf7;
+      color: var(--ink);
+      padding: 8px 10px;
+      outline: none;
+    }
+
+    .budget-field input:focus {
+      border-color: rgba(23, 58, 94, .62);
+      box-shadow: 0 0 0 3px rgba(23, 58, 94, .12);
+    }
+
+    .classification-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .classification-result {
+      margin-top: 12px;
+      border-left: 4px solid var(--moss);
+      background: #fffaf0;
+    }
+
+    .classification-result.is-mixed {
+      border-left-color: var(--amber);
+    }
+
+    .classification-result p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .classification-result p + p {
+      margin-top: 8px;
+    }
+
+    .classification-result ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 8px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .classification-result li {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      max-width: 100%;
+      padding: 5px 9px;
+      border: 1px solid rgba(23, 58, 94, .16);
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--navy);
+      font-size: .84rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .classification-result li.is-guide {
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .classification-risk {
+      margin-top: 12px;
+      padding: 13px;
+      border: 1px solid #ded7c8;
+      border-radius: 6px;
+      background: rgba(232, 238, 243, .46);
+    }
+
+    .classification-risk h5 {
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: .95rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .classification-risk ul {
+      display: grid;
+      gap: 7px;
+      margin: 0;
+      padding-left: 1.15em;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .classification-risk li::marker {
+      color: var(--moss);
+    }
+
+    .field li::marker {
+      color: var(--amber);
+    }
+
+    .law-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .law-list li {
+      min-height: 30px;
+      padding: 5px 9px;
+      border: 1px solid #e0dacd;
+      border-radius: 6px;
+      background: #fff9ec;
+      color: #5d5d55;
+      font-size: .88rem;
+      line-height: 1.45;
+    }
+
+    .quick-panel {
+      margin-top: 28px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f8f4eb;
+    }
+
+    .quick-panel h2 {
+      margin: 0 0 10px;
+      color: var(--navy-deep);
+      font-size: 1.18rem;
+      letter-spacing: 0;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .front-panel .quick-grid {
+      margin-top: 12px;
+    }
+
+    .quick-item {
+      min-height: 98px;
+      padding: 12px;
+      border: 1px solid #ddd5c5;
+      border-radius: 6px;
+      background: var(--paper);
+    }
+
+    .quick-item b {
+      display: block;
+      color: var(--navy);
+      font-size: .92rem;
+    }
+
+    .quick-item span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: .86rem;
+      line-height: 1.5;
+    }
+
+    .front-panel {
+      margin: 0 0 24px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, .92);
+      box-shadow: var(--shadow);
+    }
+
+    .front-panel.is-muted {
+      background: #f8f4eb;
+    }
+
+    .front-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .front-head h2 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1.16rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .front-head p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: .92rem;
+      line-height: 1.55;
+    }
+
+    .entry-grid,
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .entry-card,
+    .tool-card {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid #ddd5c5;
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .88);
+    }
+
+    .entry-card h3,
+    .tool-card h3 {
+      margin: 0;
+      color: var(--navy);
+      font-size: .98rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .entry-card p,
+    .tool-card p {
+      margin: 6px 0 10px;
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.5;
+    }
+
+    .support-zone {
+      margin: 0 0 24px;
+    }
+
+    .support-toggle {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, .92);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .support-summary {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+      padding: 18px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .support-summary::-webkit-details-marker,
+    .support-detail > summary::-webkit-details-marker,
+    .source-toggle > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .support-summary h2 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1.18rem;
+      letter-spacing: 0;
+    }
+
+    .support-summary p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .support-content {
+      padding: 0 18px 18px;
+    }
+
+    .support-guide {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .support-detail {
+      margin-top: 10px;
+      border: 1px solid #ddd5c5;
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .86);
+      overflow: hidden;
+    }
+
+    .support-detail > summary {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      color: var(--navy);
+      cursor: pointer;
+      font-weight: 850;
+      list-style: none;
+    }
+
+    .support-detail > summary::after {
+      content: "展開";
+      color: var(--muted);
+      flex: 0 0 auto;
+      font-size: .82rem;
+      font-weight: 700;
+    }
+
+    .support-detail[open] > summary::after {
+      content: "收合";
+    }
+
+    .support-zone .document-pack-panel,
+    .support-zone .memo-panel,
+    .support-zone .memo-check-panel,
+    .support-zone .memo-draft-panel,
+    .support-zone .template-note {
+      margin-top: 0;
+      margin-bottom: 0;
+      border-right: 0;
+      border-bottom: 0;
+      border-left: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .process-intro {
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      border: 1px solid rgba(23, 58, 94, .12);
+      border-radius: 6px;
+      background: rgba(232, 238, 243, .46);
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.55;
+    }
+
+    .floating-nav {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 40;
+      display: flex;
+      gap: 8px;
+      padding: 7px;
+      border: 1px solid rgba(23, 58, 94, .16);
+      border-radius: 999px;
+      background: rgba(255, 253, 247, .9);
+      box-shadow: 0 12px 28px rgba(38, 47, 58, .14);
+      backdrop-filter: blur(8px);
+    }
+
+    .floating-nav button {
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid rgba(23, 58, 94, .16);
+      border-radius: 999px;
+      background: rgba(232, 238, 243, .72);
+      color: var(--navy);
+      cursor: pointer;
+      font: inherit;
+      font-size: .88rem;
+      font-weight: 850;
+    }
+
+    .floating-nav button:hover,
+    .floating-nav button:focus-visible {
+      border-color: rgba(23, 58, 94, .36);
+      background: rgba(248, 244, 235, .96);
+      outline: none;
+    }
+
+    .document-pack-panel {
+      margin: 0 0 24px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(248, 244, 235, .92);
+      box-shadow: var(--shadow);
+    }
+
+    .document-pack-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .document-pack-head h2 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1.22rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .document-pack-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .document-pack-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .document-pack-card {
+      min-height: 92px;
+      padding: 12px;
+      border: 1px solid #ded7c8;
+      border-radius: 6px;
+      background: #fffdf7;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .document-pack-card:hover,
+    .document-pack-card:focus-visible,
+    .document-pack-card.is-active {
+      border-color: rgba(23, 58, 94, .32);
+      background: var(--blue-soft);
+      outline: none;
+    }
+
+    .document-pack-card strong {
+      display: block;
+      color: var(--navy);
+      font-size: .94rem;
+      line-height: 1.35;
+    }
+
+    .document-pack-card span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: .84rem;
+      line-height: 1.45;
+    }
+
+    .document-pack-result {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid #ded7c8;
+      border-left: 4px solid var(--moss);
+      border-radius: 6px;
+      background: #fffaf0;
+    }
+
+    .document-pack-result h3 {
+      margin: 0 0 8px;
+      color: var(--navy-deep);
+      font-size: 1.05rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .document-pack-reminder {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .document-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .document-list li {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: start;
+      padding: 9px 10px;
+      border: 1px solid rgba(222, 215, 200, .9);
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .82);
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.45;
+    }
+
+    .source-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 7px;
+      border: 1px solid rgba(82, 107, 88, .24);
+      border-radius: 999px;
+      background: var(--moss-soft);
+      color: var(--moss);
+      font-size: .78rem;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    button.source-badge,
+    button.internal-chip {
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    button.source-badge:hover,
+    button.source-badge:focus-visible,
+    button.internal-chip:hover,
+    button.internal-chip:focus-visible {
+      border-color: rgba(23, 58, 94, .34);
+      background: rgba(232, 238, 243, .88);
+      color: var(--navy-deep);
+      outline: none;
+    }
+
+    .source-guide-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .source-badge.is-helper {
+      border-color: rgba(23, 58, 94, .16);
+      background: var(--blue-soft);
+      color: var(--navy);
+    }
+
+    .internal-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      max-width: 100%;
+      padding: 5px 8px;
+      border: 1px solid rgba(23, 58, 94, .16);
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--navy);
+      font-size: .84rem;
+      font-weight: 800;
+      line-height: 1.35;
+      text-align: left;
+    }
+
+    .document-flow-hint {
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid rgba(222, 215, 200, .9);
+      border-radius: 6px;
+      background: rgba(232, 238, 243, .46);
+    }
+
+    .document-flow-hint h4 {
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: .95rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .flow-pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 0 0 10px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .flow-pill-list li {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      max-width: 100%;
+      padding: 5px 9px;
+      border: 1px solid rgba(23, 58, 94, .16);
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--navy);
+      font-size: .84rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .flow-pill-list li.is-guide {
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .flow-hint-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .memo-panel {
+      margin: 0 0 24px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, .92);
+      box-shadow: var(--shadow);
+    }
+
+    .memo-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .memo-head h2 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1.22rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .memo-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .memo-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .memo-card {
+      min-height: 88px;
+      padding: 12px;
+      border: 1px solid #ded7c8;
+      border-radius: 6px;
+      background: #fffdf7;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .memo-card:hover,
+    .memo-card:focus-visible,
+    .memo-card.is-active {
+      border-color: rgba(23, 58, 94, .32);
+      background: var(--blue-soft);
+      outline: none;
+    }
+
+    .memo-card strong {
+      display: block;
+      color: var(--navy);
+      font-size: .94rem;
+      line-height: 1.35;
+    }
+
+    .memo-card span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: .84rem;
+      line-height: 1.45;
+    }
+
+    .memo-result {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid #ded7c8;
+      border-left: 4px solid var(--moss);
+      border-radius: 6px;
+      background: #fffaf0;
+    }
+
+    .memo-result h3 {
+      margin: 0 0 10px;
+      color: var(--navy-deep);
+      font-size: 1.05rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .memo-result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .memo-section {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid rgba(222, 215, 200, .9);
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .82);
+    }
+
+    .memo-section.full {
+      grid-column: 1 / -1;
+    }
+
+    .memo-section h4 {
+      margin: 0 0 7px;
+      color: var(--navy);
+      font-size: .92rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .memo-section p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .memo-section ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .memo-section li {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      max-width: 100%;
+      padding: 5px 8px;
+      border: 1px solid rgba(23, 58, 94, .16);
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--navy);
+      font-size: .84rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .memo-section li.is-guide {
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .memo-risk {
+      border-left: 4px solid var(--amber);
+      background: rgba(232, 238, 243, .46);
+    }
+
+    .memo-related {
+      background: rgba(232, 238, 243, .46);
+    }
+
+    .memo-related p {
+      margin-top: 8px;
+    }
+
+    .memo-check-panel {
+      margin: 0 0 24px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(248, 244, 235, .9);
+      box-shadow: var(--shadow);
+    }
+
+    .memo-check-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .memo-check-head h2 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1.18rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .memo-check-head p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .memo-check-caution {
+      margin: 8px 0 0;
+      padding: 9px 10px;
+      border: 1px solid rgba(23, 58, 94, .14);
+      border-left: 4px solid var(--moss);
+      border-radius: 6px;
+      background: rgba(232, 238, 243, .42);
+      color: #46505d;
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    .memo-priority-panel {
+      margin: 0 0 14px;
+      padding: 14px;
+      border: 1px solid rgba(222, 215, 200, .92);
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .78);
+    }
+
+    .memo-priority-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .memo-priority-head h3 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .memo-priority-head p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .memo-priority-options {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .memo-priority-option {
+      min-height: 42px;
+      padding: 9px 10px;
+      border: 1px solid #ded7c8;
+      border-radius: 6px;
+      background: #fffdf7;
+      color: var(--navy);
+      font-size: .88rem;
+      font-weight: 850;
+      line-height: 1.35;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .memo-priority-option:hover,
+    .memo-priority-option:focus-visible,
+    .memo-priority-option.is-active {
+      border-color: rgba(23, 58, 94, .32);
+      background: var(--blue-soft);
+      outline: none;
+    }
+
+    .memo-priority-result {
+      padding: 12px;
+      border: 1px solid rgba(23, 58, 94, .12);
+      border-left: 4px solid var(--moss);
+      border-radius: 6px;
+      background: rgba(232, 238, 243, .44);
+    }
+
+    .memo-priority-result h4 {
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: .92rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .priority-pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .priority-pill-list li {
+      min-height: 28px;
+      max-width: 100%;
+      padding: 5px 8px;
+      border: 1px solid rgba(23, 58, 94, .15);
+      border-radius: 999px;
+      background: rgba(255, 253, 247, .84);
+      color: var(--navy);
+      font-size: .84rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .memo-priority-note {
+      margin: 10px 0 0;
+      color: #46505d;
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    .memo-check-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .memo-check-count,
+    .memo-check-progress {
+      min-height: 30px;
+      padding: 6px 10px;
+      border: 1px solid rgba(23, 58, 94, .16);
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--navy);
+      font-size: .86rem;
+      font-weight: 850;
+      line-height: 1.35;
+    }
+
+    .memo-check-groups {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .memo-check-group {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid rgba(222, 215, 200, .92);
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .86);
+    }
+
+    .memo-check-group h3 {
+      margin: 0 0 9px;
+      color: var(--navy);
+      font-size: .95rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .memo-check-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .memo-check-list label {
+      display: grid;
+      grid-template-columns: 20px minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      color: #343c49;
+      font-size: .88rem;
+      line-height: 1.5;
+      cursor: pointer;
+    }
+
+    .memo-check-list input {
+      width: 16px;
+      height: 16px;
+      margin-top: 3px;
+      accent-color: var(--navy);
+    }
+
+    .memo-check-message {
+      margin: 12px 0 0;
+      padding: 11px 12px;
+      border: 1px solid rgba(23, 58, 94, .14);
+      border-left: 4px solid var(--amber);
+      border-radius: 6px;
+      background: rgba(232, 238, 243, .48);
+      color: #46505d;
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    .memo-check-message.is-complete {
+      border-left-color: var(--moss);
+      background: rgba(222, 232, 224, .54);
+    }
+
+    .memo-draft-panel {
+      margin: 0 0 24px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 247, .92);
+      box-shadow: var(--shadow);
+    }
+
+    .memo-draft-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+
+    .memo-draft-head h2 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: 1.18rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .memo-draft-head p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .memo-draft-caution {
+      margin: 8px 0 0;
+      padding: 9px 10px;
+      border: 1px solid rgba(23, 58, 94, .14);
+      border-left: 4px solid var(--moss);
+      border-radius: 6px;
+      background: rgba(232, 238, 243, .42);
+      color: #46505d;
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    .memo-draft-options {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .memo-draft-option {
+      min-height: 44px;
+      padding: 9px 10px;
+      border: 1px solid #ded7c8;
+      border-radius: 6px;
+      background: #fffdf7;
+      color: var(--navy);
+      font-size: .88rem;
+      font-weight: 850;
+      line-height: 1.35;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .memo-draft-option:hover,
+    .memo-draft-option:focus-visible,
+    .memo-draft-option.is-active {
+      border-color: rgba(23, 58, 94, .32);
+      background: var(--blue-soft);
+      outline: none;
+    }
+
+    .memo-draft-result {
+      padding: 14px;
+      border: 1px solid #ded7c8;
+      border-left: 4px solid var(--moss);
+      border-radius: 6px;
+      background: #fffaf0;
+    }
+
+    .memo-draft-result h3 {
+      margin: 0 0 10px;
+      color: var(--navy-deep);
+      font-size: 1.05rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .memo-draft-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .memo-draft-section {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid rgba(222, 215, 200, .9);
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .82);
+    }
+
+    .memo-draft-section.full {
+      grid-column: 1 / -1;
+    }
+
+    .memo-draft-section h4 {
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: .92rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .memo-draft-section p {
+      margin: 0;
+      color: #46505d;
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    .memo-draft-section ul {
+      display: grid;
+      gap: 7px;
+      margin: 0;
+      padding-left: 1.05rem;
+      color: #46505d;
+      font-size: .9rem;
+      line-height: 1.55;
+    }
+
+    .memo-draft-section.is-risk {
+      border-left: 4px solid var(--amber);
+      background: rgba(232, 238, 243, .46);
+    }
+
+    .mobile-back,
+    .menu-back {
+      display: none;
+      width: 100%;
+      margin-top: 16px;
+      min-height: 42px;
+      border: 1px solid rgba(23, 58, 94, .28);
+      border-radius: 6px;
+      background: var(--blue-soft);
+      color: var(--navy);
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      background: #ece7dd;
+    }
+
+    .footer-inner {
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+      padding: 22px 0 26px;
+      color: #4c5360;
+      font-size: .9rem;
+    }
+
+    .footer-inner p {
+      margin: 0;
+    }
+
+    .footer-inner p + p {
+      margin-top: 10px;
+    }
+
+    .sources {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      margin-top: 12px;
+    }
+
+    .sources a {
+      color: var(--navy);
+      font-weight: 700;
+      text-underline-offset: 3px;
+    }
+
+    .source-toggle {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid rgba(23, 58, 94, .14);
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .54);
+    }
+
+    .source-toggle > summary {
+      color: var(--navy);
+      cursor: pointer;
+      font-weight: 850;
+      list-style: none;
+    }
+
+    .source-toggle > summary::after {
+      content: "展開";
+      float: right;
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 700;
+    }
+
+    .source-toggle[open] > summary::after {
+      content: "收合";
+    }
+
+    .source-toggle .sources {
+      margin-top: 10px;
+    }
+
+    .source-toggle + .copyright {
+      margin-top: 10px;
+    }
+
+    .template-note {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid #ded7c8;
+      border-radius: 6px;
+      background: rgba(255, 253, 247, .72);
+    }
+
+    .template-note h2 {
+      margin: 0 0 8px;
+      color: var(--navy-deep);
+      font-size: 1rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .template-note p {
+      color: #4c5360;
+    }
+
+    .template-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .template-list li {
+      min-width: 0;
+      padding: 10px;
+      border: 1px solid rgba(222, 215, 200, .9);
+      border-radius: 6px;
+      background: rgba(248, 244, 235, .72);
+      color: #4c5360;
+      font-size: .88rem;
+      line-height: 1.55;
+    }
+
+    .memo-draft-guide {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .template-list strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--navy);
+    }
+
+    .template-link {
+      display: inline-flex;
+      width: max-content;
+      max-width: 100%;
+      margin-top: 12px;
+      color: var(--navy);
+      font-weight: 850;
+      text-underline-offset: 3px;
+    }
+
+    .copyright {
+      color: #323946;
+      font-weight: 700;
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .layout,
+      .quick-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        max-height: none;
+      }
+
+      .nav-groups {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .nav-group + .nav-group {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 0;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .hero,
+      main,
+      .footer-inner {
+        width: min(100% - 28px, var(--max));
+      }
+
+      body {
+        padding-bottom: 74px;
+      }
+
+      .hero {
+        padding-top: 22px;
+      }
+
+      .hero-top,
+      .card-head {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .pill {
+        width: max-content;
+        max-width: 100%;
+        white-space: normal;
+      }
+
+      .brief,
+      .fields,
+      .amount-form,
+      .amount-result-grid,
+      .amount-guidance,
+      .consistency-head,
+      .consistency-groups,
+      .price-head,
+      .price-form,
+      .review-grid,
+      .price-result,
+      .tender-head,
+      .tender-form,
+      .special-grid,
+      .tender-result-grid,
+      .front-head,
+      .support-summary,
+      .entry-grid,
+      .tool-grid,
+      .classification-head,
+      .classification-grid,
+      .budget-grid,
+      .classification-summary,
+      .template-list,
+      .document-pack-head,
+      .document-pack-grid,
+      .document-list,
+      .memo-head,
+      .memo-check-head,
+      .memo-priority-head,
+      .memo-priority-options,
+      .memo-draft-head,
+      .memo-draft-options,
+      .memo-draft-grid,
+      .memo-grid,
+      .memo-result-grid,
+      .memo-check-groups,
+      .nav-groups {
+        grid-template-columns: 1fr;
+      }
+
+      .card-head,
+      .card-body {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .tags {
+        justify-content: flex-start;
+      }
+
+      .floating-nav {
+        right: 14px;
+        bottom: 12px;
+        left: 14px;
+        justify-content: center;
+        border-radius: 16px;
+      }
+
+      .floating-nav button {
+        flex: 1;
+        padding-right: 10px;
+        padding-left: 10px;
+      }
+
+      .document-list li {
+        grid-template-columns: 1fr;
+      }
+
+      .source-guide-list {
+        justify-content: flex-start;
+      }
+
+      .amount-tool {
+        padding: 14px;
+      }
+
+      .consistency-tool {
+        padding: 14px;
+      }
+
+      .price-tool {
+        padding: 14px;
+      }
+
+      .tender-tool {
+        padding: 14px;
+      }
+
+      .classification-tool {
+        padding: 14px;
+      }
+
+      .amount-tool-head {
+        display: block;
+      }
+
+      .memo-section.full {
+        grid-column: auto;
+      }
+
+      .memo-draft-section.full {
+        grid-column: auto;
+      }
+
+      .price-result-card.full {
+        grid-column: auto;
+      }
+
+      .basis-list li {
+        grid-template-columns: 1fr;
+        gap: 2px;
+      }
+
+      .mobile-back,
+      .menu-back {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="top-band">
+    <div class="hero">
+      <div class="hero-top">
+        <div>
+          <p class="eyebrow">政府採購流程與法規查核輔助</p>
+          <h1>政府採購流程查核系統</h1>
+          <p class="subtitle">金額級距・招標方式・文件風險・履約驗收輔助檢核</p>
+        </div>
+        <div class="pill">靜態查核工具・不儲存採購資料</div>
+      </div>
+
+      <div class="hero-grid">
+        <div class="brief" aria-label="工具定位">
+          <div class="brief-item">
+            <strong>流程定位</strong>
+            <span>協助承辦人在每一節點確認走到哪一步、下一步要看什麼。</span>
+          </div>
+          <div class="brief-item">
+            <strong>查核重點</strong>
+            <span>聚焦金額級距、招標方式、文件一致性與履約驗收風險。</span>
+          </div>
+          <div class="brief-item">
+            <strong>使用邊界</strong>
+            <span>不代替法律意見，不替機關或承辦人決定採購結果。</span>
+          </div>
+        </div>
+
+        <aside class="thresholds" aria-label="內建金額基準">
+          <strong class="threshold-title">內建金額基準</strong>
+          <ul class="threshold-list">
+            <li><span>中央機關小額採購</span><b>15 萬以下</b></li>
+            <li><span>公告金額</span><b>150 萬</b></li>
+            <li><span>查核金額：工程、財物</span><b>5,000 萬</b></li>
+            <li><span>查核金額：勞務</span><b>1,000 萬</b></li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="front-panel" id="work-entry" aria-labelledby="workEntryTitle">
+      <div class="front-head">
+        <div>
+          <h2 id="workEntryTitle">你現在要處理哪一件事？</h2>
+          <p>先從目前最接近的工作切入，再往下查看流程卡或文件輔助。</p>
+        </div>
+        <span class="tag is-risk">採購工作入口</span>
+      </div>
+      <div class="entry-grid">
+        <article class="entry-card">
+          <h3>我不確定採購性質</h3>
+          <p>先判斷工程、財物、勞務或混合採購。</p>
+          <button class="internal-chip" type="button" data-internal-target="P002">前往 P002</button>
+        </article>
+        <article class="entry-card">
+          <h3>我要判斷金額級距</h3>
+          <p>輸入性質與金額，查看初步級距。</p>
+          <button class="internal-chip" type="button" data-internal-target="P003">前往 P003</button>
+        </article>
+        <article class="entry-card">
+          <h3>我要確認招標方式</h3>
+          <p>查看可能程序與特殊情形提醒。</p>
+          <button class="internal-chip" type="button" data-internal-target="P005">前往 P005</button>
+        </article>
+        <article class="entry-card">
+          <h3>我要檢查文件一致性</h3>
+          <p>檢查簽呈、招標、契約與驗收資料。</p>
+          <button class="internal-chip" type="button" data-internal-target="P006">前往 P006</button>
+        </article>
+        <article class="entry-card">
+          <h3>我要準備簽呈</h3>
+          <p>查看簽呈段落、欄位與草稿架構提示。</p>
+          <button class="internal-chip" type="button" data-internal-target="memo-guide">前往簽呈提示</button>
+        </article>
+        <article class="entry-card">
+          <h3>我要準備履約驗收付款</h3>
+          <p>回到履約管理與驗收付款查核卡。</p>
+          <button class="internal-chip" type="button" data-internal-target="P012">前往 P012</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="front-panel is-muted" aria-labelledby="commonToolsTitle">
+      <div class="front-head">
+        <div>
+          <h2 id="commonToolsTitle">常用輔助工具</h2>
+          <p>常用互動檢核集中在這裡，點選後會導引到對應區塊。</p>
+        </div>
+        <span class="tag">快速前往</span>
+      </div>
+      <div class="tool-grid">
+        <article class="tool-card">
+          <h3>P002｜採購性質分類</h3>
+          <p>用線索與預算占比輔助分類思考。</p>
+          <button class="internal-chip" type="button" data-internal-target="P002">前往工具</button>
+        </article>
+        <article class="tool-card">
+          <h3>P003｜金額級距判斷</h3>
+          <p>判斷小額、公告金額與查核金額級距。</p>
+          <button class="internal-chip" type="button" data-internal-target="P003">前往工具</button>
+        </article>
+        <article class="tool-card">
+          <h3>P005｜招標方式初步提示</h3>
+          <p>查看可能程序與特殊情形提醒。</p>
+          <button class="internal-chip" type="button" data-internal-target="P005">前往工具</button>
+        </article>
+        <article class="tool-card">
+          <h3>P006｜文件一致性檢查</h3>
+          <p>逐項確認金額、期限、決標與付款一致性。</p>
+          <button class="internal-chip" type="button" data-internal-target="P006">前往工具</button>
+        </article>
+        <article class="tool-card">
+          <h3>P007｜底價、預算與決標原則</h3>
+          <p>檢核預算、底價、決標原則與評選提醒。</p>
+          <button class="internal-chip" type="button" data-internal-target="P007">前往工具</button>
+        </article>
+        <article class="tool-card">
+          <h3>簽呈欄位檢核表</h3>
+          <p>送出前檢查簽呈欄位、附件與程序提醒。</p>
+          <button class="internal-chip" type="button" data-internal-target="memo-checklist">前往檢核表</button>
+        </article>
+      </div>
+      <div class="quick-grid" aria-label="高風險提示">
+        <div class="quick-item">
+          <b>金額風險</b>
+          <span>注意分批採購、金額不一致與誤用小額程序。</span>
+        </div>
+        <div class="quick-item">
+          <b>分類風險</b>
+          <span>留意工程、財物、勞務或技術服務混合情形。</span>
+        </div>
+        <div class="quick-item">
+          <b>招標方式風險</b>
+          <span>限制性招標與公開取得報價須保留依據。</span>
+        </div>
+        <div class="quick-item">
+          <b>文件一致性風險</b>
+          <span>期限、付款、評審、保固與驗收方式應一致。</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="support-zone" aria-labelledby="supportZoneTitle">
+      <details class="support-toggle">
+        <summary class="support-summary">
+          <div>
+            <h2 id="supportZoneTitle">文件與簽呈輔助</h2>
+            <p>依目前採購情境查看常見文件、校內簽呈提示、欄位檢核、草稿結構與工程會最新版範本提醒。</p>
+          </div>
+          <span class="tag is-risk">展開詳細工具</span>
+        </summary>
+        <div class="support-content">
+        <div class="support-guide" aria-label="文件與簽呈輔助導引">
+          <button class="internal-chip" type="button" data-internal-target="document-packs">文件包</button>
+          <button class="internal-chip" type="button" data-internal-target="memo-guide">簽呈提示</button>
+          <button class="internal-chip" type="button" data-internal-target="memo-checklist">欄位檢核</button>
+          <button class="internal-chip" type="button" data-internal-target="memo-draft">草稿結構</button>
+          <button class="internal-chip" type="button" data-internal-target="template-update-note">最新版範本</button>
+        </div>
+
+      <details class="support-detail">
+        <summary>我要準備哪些文件？</summary>
+      <section class="document-pack-panel" id="document-packs" aria-labelledby="documentPackTitle">
+        <div class="document-pack-head">
+          <div>
+            <h2 id="documentPackTitle">文件包導航</h2>
+            <p>依採購情境查看常見文件與來源類型。</p>
+          </div>
+          <span class="tag is-risk">情境文件包</span>
+        </div>
+        <div class="document-pack-grid" id="documentPackGrid"></div>
+        <div class="document-pack-result" id="documentPackResult" aria-live="polite"></div>
+      </section>
+      </details>
+
+      <details class="support-detail">
+        <summary>簽呈撰寫提示</summary>
+      <section class="memo-panel" id="memo-guide" aria-labelledby="memoTitle">
+        <div class="memo-head">
+          <div>
+            <h2 id="memoTitle">簽呈撰寫提示</h2>
+            <p>提供簽呈段落與欄位提示，不直接產生正式簽呈。</p>
+          </div>
+          <span class="tag is-risk">段落與欄位提示</span>
+        </div>
+        <div class="memo-grid" id="memoGrid"></div>
+        <div class="memo-result" id="memoResult" aria-live="polite"></div>
+      </section>
+      </details>
+
+      <details class="support-detail">
+        <summary>簽呈欄位檢核表</summary>
+      <section class="memo-check-panel" id="memo-checklist" aria-labelledby="memoCheckTitle">
+        <div class="memo-check-head">
+          <div>
+            <h2 id="memoCheckTitle">簽呈欄位檢核表</h2>
+            <p>送出前檢查欄位完整性，詳細程序提醒保留於本表內。</p>
+            <p class="memo-check-caution">簽呈欄位檢核表僅協助確認欄位完整性，不代表採購程序已完成，也不代表機關已完成核准、公告、決標、履約或驗收程序。</p>
+          </div>
+          <span class="tag is-risk">送出前檢核</span>
+        </div>
+        <section class="memo-priority-panel" aria-labelledby="memoPriorityTitle">
+          <div class="memo-priority-head">
+            <div>
+              <h3 id="memoPriorityTitle">依簽呈情境優先檢查</h3>
+              <p>先看本次簽呈應優先確認的欄位；本提示不取代完整檢核表。</p>
+            </div>
+            <span class="tag">提示文字</span>
+          </div>
+          <div class="memo-priority-options" id="memoPriorityOptions"></div>
+          <div class="memo-priority-result" id="memoPriorityResult" aria-live="polite"></div>
+        </section>
+        <div class="memo-check-summary" aria-live="polite">
+          <span class="memo-check-count" data-memo-check-count>已檢查 0 / 總項目 0</span>
+          <span class="memo-check-progress" data-memo-check-progress>完成度 0 / 0</span>
+        </div>
+        <div class="memo-check-groups" id="memoCheckGroups"></div>
+        <p class="memo-check-message" data-memo-check-message>仍有簽呈欄位尚未完成檢查，建議送出前再次確認欄位、附件與法源依據。</p>
+      </section>
+      </details>
+
+      <details class="support-detail">
+        <summary>簽呈草稿結構預覽</summary>
+      <section class="memo-draft-panel" id="memo-draft" aria-labelledby="memoDraftTitle">
+        <div class="memo-draft-head">
+          <div>
+            <h2 id="memoDraftTitle">簽呈草稿結構預覽</h2>
+            <p>提供段落架構與欄位提示，不產生正式公文。</p>
+            <p class="memo-draft-caution">本區內容僅為段落架構範例，送出前仍應回到簽呈欄位檢核表，並與 P002 採購性質分類、P003 金額級距判斷、P005 招標方式初步選擇及 P006 文件一致性檢查交叉確認；案由與各段文字請依實際案件、學校公文格式及機關程序改寫。</p>
+            <div class="memo-draft-guide" aria-label="簽呈草稿交叉確認導引">
+              <button class="internal-chip" type="button" data-internal-target="memo-checklist">簽呈欄位檢核表</button>
+              <button class="internal-chip" type="button" data-internal-target="P002">P002 採購性質分類</button>
+              <button class="internal-chip" type="button" data-internal-target="P003">P003 金額級距判斷</button>
+              <button class="internal-chip" type="button" data-internal-target="P005">P005 招標方式初步選擇</button>
+              <button class="internal-chip" type="button" data-internal-target="P006">P006 文件一致性檢查</button>
+            </div>
+          </div>
+          <span class="tag is-risk">結構預覽</span>
+        </div>
+        <div class="memo-draft-options" id="memoDraftOptions"></div>
+        <div class="memo-draft-result" id="memoDraftResult" aria-live="polite"></div>
+      </section>
+      </details>
+
+      <details class="support-detail">
+        <summary>工程會最新版範本提醒</summary>
+      <section class="template-note" id="template-update-note" aria-label="最新版範本提醒">
+        <h2>最新版範本提醒</h2>
+        <p>正式製作招標文件、契約或驗收表件前，請至行政院公共工程委員會「招標相關文件及表格」下載最新版範本。</p>
+        <ul class="template-list">
+          <li><strong>一、招標前文件</strong>投標須知範本、招標投標及契約文件範本、投標廠商聲明書、投標標價清單範本。</li>
+          <li><strong>二、契約文件</strong>工程採購契約範本、財物採購契約範本、勞務採購契約範本、公共工程技術服務契約範本、資訊服務採購契約範本。</li>
+          <li><strong>三、開標決標文件</strong>開標／議價／決標／流標／廢標紀錄、價格標標價比較表。</li>
+          <li><strong>四、驗收結案文件</strong>初驗紀錄、驗收紀錄、工程結算驗收證明書、財物結算驗收證明書、勞務結算驗收證明書。</li>
+        </ul>
+        <a class="template-link" href="https://www.pcc.gov.tw/content/list?eid=9807&lang=1" target="_blank" rel="noopener noreferrer">行政院公共工程委員會｜招標相關文件及表格</a>
+      </section>
+      </details>
+        </div>
+      </details>
+    </section>
+
+    <p class="process-intro">若你已知道案件進度，可直接點選下列流程節點查看查核卡。</p>
+
+    <div class="layout">
+      <nav class="sidebar" id="processNav" aria-label="流程目錄">
+        <div class="sidebar-header">
+          <h2>流程目錄</h2>
+          <p>點選步驟後查看查核重點、風險提醒與常見文件。</p>
+        </div>
+        <div class="nav-groups" id="navGroups"></div>
+      </nav>
+
+      <div class="content" id="cards"></div>
+    </div>
+  </main>
+
+  <nav class="floating-nav" aria-label="快速導覽">
+    <button type="button" data-internal-target="work-entry">↑ 工作入口</button>
+    <button type="button" data-internal-target="processNav">≡ 流程目錄</button>
+  </nav>
+
+  <footer>
+    <div class="footer-inner">
+      <p>本工具為政府採購流程與法規查核輔助，實際案件仍應依現行法規、主管機關函釋、行政院公共工程委員會最新範本及機關內部程序辦理。</p>
+      <details class="source-toggle">
+        <summary>參考來源說明</summary>
+        <p class="sources">
+          <a href="https://lawweb.pcc.gov.tw/LawContent.aspx?id=GL000093" target="_blank" rel="noopener noreferrer">政府採購法之查核金額、公告金額及中央機關小額採購金額</a>
+          <a href="https://lawweb.pcc.gov.tw/LawContent.aspx?id=FL000666" target="_blank" rel="noopener noreferrer">中央機關未達公告金額採購招標辦法</a>
+          <a href="https://www.pcc.gov.tw/content/index?eid=9812&type=C" target="_blank" rel="noopener noreferrer">行政院公共工程委員會契約範本</a>
+        </p>
+      </details>
+      <p class="copyright">COPYRIGHT © 2026 HSINCHU NEI HU PRIMARY SCHOOL<br>總務主任 江志宏<br>smallcannon@nhps.hc.edu.tw｜03-5373184 #130</p>
+    </div>
+  </footer>
+
+  <script>
+    const processGroups = [
+      {
+        title: "一、採購前判斷",
+        steps: [
+          {
+            code: "P001",
+            name: "需求確認與採購目的",
+            summary: "先確認需求、預算與採購目的是否明確，避免後續文件各寫各的。",
+            tags: ["需求", "預算", "拆案風險"],
+            checks: [
+              "需求是否能以具體規格、數量、服務內容或成果交付描述。",
+              "預算來源、可支用科目與估算基礎是否已確認。",
+              "同一需求是否被切成多案辦理，可能產生規避金額級距疑慮。",
+              "需求是否兼具工程、財物、勞務性質，需先釐清主要採購目的。"
+            ],
+            risks: [
+              "只有口頭需求或簡略品名，後續規格、契約與驗收標準難以一致。",
+              "為了符合小額或未達公告金額而分批辦理，可能被認定有規避程序疑慮。",
+              "未先確認預算即啟動程序，容易造成簽呈、公告與契約金額不一致。"
+            ],
+            docs: ["需求說明", "預算資料", "估價紀錄", "簽呈或需求核准文件"],
+            laws: ["政府採購法第 6 條", "政府採購法第 14 條", "機關內部採購分層負責規定"],
+            questions: [
+              "這個需求若交給不同承辦人說明，會得到同一個採購目的嗎？",
+              "本案是否有同期間、同標的、同供應來源的其他採購案？"
+            ]
+          },
+          {
+            code: "P002",
+            name: "採購性質分類",
+            summary: "依主要目的、預算占比與履約內容，初步判斷工程、財物或勞務。",
+            tags: ["工程", "財物", "勞務"],
+            checks: [
+              "工程案是否涉及施工、修繕、安裝、改善、拆除或相關技術服務。",
+              "財物案是否以買受、定製、承租、財產取得或物品供應為主。",
+              "勞務案是否以服務、維護、委託研究、專業技術或人力支援為主。",
+              "混合性採購是否留下分類判斷理由與主要目的說明。"
+            ],
+            risks: [
+              "含安裝施工的財物案未釐清工程性質，可能影響招標文件與契約條款。",
+              "技術服務案誤當一般勞務，評選、資格與契約管理可能不足。",
+              "分類結果未記錄理由，日後審計或稽核時難以說明。"
+            ],
+            docs: ["採購性質判斷紀錄", "需求規格書", "估價明細", "履約範圍說明"],
+            laws: ["政府採購法第 7 條", "工程會相關函釋", "各類採購契約範本"],
+            questions: [
+              "本案最主要要取得的是施工成果、物品，還是服務成果？",
+              "分類判斷是否能從需求書與預算明細看得出來？"
+            ]
+          },
+          {
+            code: "P003",
+            name: "金額級距判斷",
+            summary: "以預估採購金額判斷小額、逾小額未達公告金額、公告金額以上與查核金額以上。",
+            tags: ["金額", "公告金額", "查核金額"],
+            emphasis: "amount",
+            checks: [
+              "中央機關小額採購基準是否為 15 萬元以下。",
+              "公告金額是否以 150 萬元作為工程、財物、勞務共同基準。",
+              "查核金額是否依性質分別判斷：工程與財物 5,000 萬元，勞務 1,000 萬元。",
+              "預算書、簽呈、招標文件與契約金額是否使用同一套金額基礎。"
+            ],
+            risks: [
+              "誤把逾小額未達公告金額案件當小額採購處理。",
+              "以分批或分項方式降低單案金額，但實質需求具同一性。",
+              "未注意查核金額以上案件可能涉及上級機關監辦或其他內部程序。"
+            ],
+            docs: ["預算核定文件", "估價單", "採購金額級距判斷表", "分批採購理由說明"],
+            laws: ["政府採購法第 13 條", "政府採購法第 14 條", "工程會金額基準公告"],
+            questions: [
+              "本案是否把相關需求都納入同一採購金額判斷？",
+              "若金額接近級距門檻，是否已提高文件留痕與審核層級？"
+            ]
+          },
+          {
+            code: "P004",
+            name: "是否適用特殊採購規定",
+            summary: "辨識共同供應契約、補助款、緊急採購、限制性招標、最有利標或異質採購等情形。",
+            tags: ["特殊規定", "補助", "異質"],
+            checks: [
+              "是否可使用共同供應契約或已存在的集中採購管道。",
+              "補助款採購是否須依補助機關規定或契約條件辦理。",
+              "緊急採購是否具備急迫事由、核准程序與事後補正紀錄。",
+              "是否涉及限制性招標、最有利標、準用最有利標或異質採購判斷。"
+            ],
+            risks: [
+              "使用特殊程序但未保留適用理由與核准依據。",
+              "補助款案件只看校內流程，漏掉補助機關的採購或核銷條件。",
+              "把時間急迫當成緊急採購理由，但未能證明不可預見或不可歸責。"
+            ],
+            docs: ["特殊採購適用說明", "補助契約或核定函", "核准簽呈", "工程會函釋或機關規定"],
+            laws: ["政府採購法第 22 條", "政府採購法第 52 條", "中央機關共同供應契約實施辦法"],
+            questions: [
+              "本案使用特殊規定的理由是否能被外部人員理解？",
+              "是否已確認補助、共同供應契約或機關內部程序的優先順序？"
+            ]
+          }
+        ]
+      },
+      {
+        title: "二、招標方式與文件準備",
+        steps: [
+          {
+            code: "P005",
+            name: "招標方式初步選擇",
+            summary: "依金額級距、採購性質與法定條件，初步選擇公開招標、限制性招標或公開取得報價等方式。",
+            tags: ["招標方式", "公開取得", "限制性招標"],
+            checks: [
+              "公告金額以上採購是否原則採公開招標，例外程序是否有法條依據。",
+              "逾公告金額十分之一但未達公告金額採購，是否依未達公告金額採購招標辦法辦理。",
+              "公開取得書面報價或企劃書時，是否規劃取得三家以上廠商文件。",
+              "限制性招標是否具備政府採購法第 22 條各款事由與核准程序。"
+            ],
+            risks: [
+              "限制性招標只寫採購方便或廠商熟悉，未對應明確法條款次。",
+              "公開取得報價或企劃書未完整留存邀請、回覆、比價或評審紀錄。",
+              "未達公告金額案件仍可能因性質、金額或內規需要較完整程序。"
+            ],
+            docs: ["招標方式判斷表", "簽呈", "廠商邀請紀錄", "書面報價或企劃書"],
+            laws: ["政府採購法第 18 條", "政府採購法第 22 條", "政府採購法第 49 條", "中央機關未達公告金額採購招標辦法第 2 條"],
+            questions: [
+              "本案招標方式是否能用金額級距與法條清楚說明？",
+              "若採限制性招標，核准簽呈是否寫到具體款次與事實理由？"
+            ]
+          },
+          {
+            code: "P006",
+            name: "招標文件一致性檢查",
+            summary: "檢查簽呈、需求、預算、投標須知、契約、報價單與評審資料是否互相一致。",
+            tags: ["文件", "一致性", "規格"],
+            emphasis: "risk",
+            checks: [
+              "採購名稱、數量、規格、履約地點與交付成果是否一致。",
+              "履約期限、付款方式、保固、驗收方式是否在各文件中一致。",
+              "評審項目、配分、及格門檻與決標原則是否一致。",
+              "契約範本是否使用最新版本，並刪修不適用條款。"
+            ],
+            risks: [
+              "簽呈寫一種履約期限，契約與投標須知寫另一種期限。",
+              "需求規格過度指向特定品牌、型號或廠商，造成限制競爭疑慮。",
+              "評審項目、配分或及格門檻在公告文件與會議資料不一致。",
+              "沿用舊案文件未全面替換名稱、日期、金額或附件。"
+            ],
+            docs: ["簽呈", "投標須知", "需求或規格說明", "契約草案", "報價單", "評審表"],
+            laws: ["政府採購法第 26 條", "政府採購法第 30 條", "採購契約要項", "工程會契約範本"],
+            questions: [
+              "把本案文件並排閱讀時，關鍵數字與期限是否完全一致？",
+              "文件中是否還殘留前案名稱、日期、地點或規格？"
+            ]
+          },
+          {
+            code: "P007",
+            name: "底價、預算與決標原則",
+            summary: "確認是否應訂底價、底價核定時點，以及最低標、最有利標或評分及格最低標等決標方式。",
+            tags: ["底價", "決標", "預算"],
+            checks: [
+              "是否依法或依機關規定訂定底價，並於適當時點核定。",
+              "預算金額、底價、廠商報價與決標金額是否分別留存紀錄。",
+              "最低標、最有利標、評分及格最低標等方式是否事前公告清楚。",
+              "底價訂定是否有估價、市場行情、過往採購或專業意見支持。"
+            ],
+            risks: [
+              "未先確認決標原則，導致評審資料與招標文件不一致。",
+              "底價核定時點或保密處理不當，影響採購程序公正。",
+              "採最有利標或準用最有利標，但評選項目與核准依據不足。"
+            ],
+            docs: ["底價建議表", "底價核定文件", "估價資料", "決標原則說明", "評審委員名單"],
+            laws: ["政府採購法第 46 條", "政府採購法第 52 條", "最有利標評選辦法"],
+            questions: [
+              "本案決標原則是否已在招標文件中明確揭示？",
+              "底價或評選方式的形成依據是否足以回應稽核問題？"
+            ]
+          }
+        ]
+      },
+      {
+        title: "三、招標、開標、決標",
+        steps: [
+          {
+            code: "P008",
+            name: "公告、邀標與等標期檢核",
+            summary: "確認公告方式、等標期、廠商資格、押標金、領標方式與疑義釋疑期限。",
+            tags: ["公告", "等標期", "釋疑"],
+            checks: [
+              "公告或邀標方式是否符合採購金額與招標方式要求。",
+              "等標期是否依採購性質、金額、複雜度與法規要求設定。",
+              "廠商資格是否與履約能力相關，且未過度限制競爭。",
+              "疑義、異議、釋疑與更正公告期限是否留足作業時間。"
+            ],
+            risks: [
+              "等標期過短，廠商無法合理準備，容易引發疑義或異議。",
+              "廠商資格條件與採購標的關聯不足，可能形成不當限制。",
+              "更正招標文件後未同步調整期限或通知廠商。"
+            ],
+            docs: ["公告資料", "邀標紀錄", "領標紀錄", "釋疑或更正公告", "廠商資格條件表"],
+            laws: ["政府採購法第 27 條", "政府採購法第 28 條", "政府採購法第 36 條", "政府採購法第 41 條"],
+            questions: [
+              "廠商若只看公告與投標須知，是否能清楚知道如何投標？",
+              "資格條件是否能逐項說明與本案履約能力的關聯？"
+            ]
+          },
+          {
+            code: "P009",
+            name: "開標、審標與評審程序",
+            summary: "檢核資格審查、規格審查、價格審查、評審委員、會議紀錄與利益迴避。",
+            tags: ["開標", "審標", "評審"],
+            checks: [
+              "開標時間、地點、主持人、紀錄與出席人員是否完整。",
+              "資格、規格、價格審查順序與標準是否依招標文件執行。",
+              "評審委員遴選、出席、評分、共識或會議紀錄是否完整。",
+              "委員、承辦人與相關人員是否完成利益迴避確認。"
+            ],
+            risks: [
+              "審查標準臨時變更，或未依招標文件載明方式審查。",
+              "評審紀錄只保留結果，未能看出評分理由與程序完整性。",
+              "利益迴避未事前確認，事後才發現關係或接觸紀錄。"
+            ],
+            docs: ["開標紀錄", "審標表", "評審會議紀錄", "委員評分表", "利益迴避聲明"],
+            laws: ["政府採購法第 48 條", "政府採購法第 50 條", "採購評選委員會組織準則", "採購人員倫理準則"],
+            questions: [
+              "本案每一項審查結果是否都能回到招標文件找到依據？",
+              "會議紀錄是否足以說明評審如何形成結果？"
+            ]
+          },
+          {
+            code: "P010",
+            name: "決標、議價與決標公告",
+            summary: "確認決標方式、議價紀錄、決標公告、未得標廠商通知與保證金處理。",
+            tags: ["決標", "議價", "公告"],
+            checks: [
+              "決標結果是否符合事前公告的決標原則與審查結果。",
+              "議價、比價、減價或協商過程是否有書面紀錄。",
+              "決標公告或決標資訊是否依規定辦理。",
+              "未得標廠商通知、押標金或保證金處理是否留存紀錄。"
+            ],
+            risks: [
+              "決標理由只寫依規定辦理，未連結評審或審標結果。",
+              "議價紀錄缺少時間、出席人員、議價金額或廠商回覆。",
+              "決標後未同步整理保證金、通知與公告資料，造成結案缺件。"
+            ],
+            docs: ["決標紀錄", "議價紀錄", "決標公告", "廠商通知", "保證金收退紀錄"],
+            laws: ["政府採購法第 52 條", "政府採購法第 53 條", "政府採購法第 61 條", "政府採購法第 62 條"],
+            questions: [
+              "決標結果是否能由開標、審標與評審資料一路追溯？",
+              "廠商通知與公告完成後，是否已留下日期與方式紀錄？"
+            ]
+          }
+        ]
+      },
+      {
+        title: "四、履約與驗收",
+        steps: [
+          {
+            code: "P011",
+            name: "簽約、履約管理與變更契約",
+            summary: "確認契約文件、履約期限、展延、變更設計、追加減與逾期違約金管理。",
+            tags: ["簽約", "履約", "變更"],
+            checks: [
+              "契約主文、附件、投標文件、決標紀錄與補充說明是否整理完整。",
+              "履約期限、開工或開始服務日期、交付里程碑是否明確。",
+              "展延、變更、追加減或契約價金調整是否事前核准並留存理由。",
+              "逾期違約金、保固、保險、保證金與風險分擔條款是否可執行。"
+            ],
+            risks: [
+              "未簽約或未完成必要文件即先行履約。",
+              "變更契約只以口頭或電子訊息處理，未完成正式核准程序。",
+              "展延理由不明確，導致逾期責任與違約金計算困難。"
+            ],
+            docs: ["契約書", "履約管理紀錄", "展延申請", "變更契約簽呈", "追加減明細", "逾期計算表"],
+            laws: ["政府採購法第 63 條", "政府採購法第 65 條", "採購契約要項", "工程會契約範本"],
+            questions: [
+              "契約附件順序與內容是否足以判斷真正履約義務？",
+              "每一次變更是否都能說明原因、金額、期限與核准依據？"
+            ]
+          },
+          {
+            code: "P012",
+            name: "驗收、付款與結案歸檔",
+            summary: "確認驗收人員、驗收紀錄、改善期限、結算驗收證明、付款文件與歸檔。",
+            tags: ["驗收", "付款", "歸檔"],
+            checks: [
+              "驗收人員、會驗人員、監驗人員與廠商出席情形是否符合規定。",
+              "驗收標準是否能回到契約、規格書、圖說或成果要求。",
+              "缺失改善、複驗、減價收受或逾期違約金是否處理完整。",
+              "付款憑證、保固文件、結算驗收證明與全案歸檔是否齊備。"
+            ],
+            risks: [
+              "驗收只看外觀或數量，未對照契約規格、功能或服務成果。",
+              "改善期限與複驗結果未留存，付款時缺少依據。",
+              "結案歸檔缺少公告、決標、契約、驗收或付款關鍵文件。"
+            ],
+            docs: ["驗收紀錄", "改善通知", "複驗紀錄", "結算驗收證明", "發票或付款憑證", "歸檔清單"],
+            laws: ["政府採購法第 71 條", "政府採購法第 72 條", "政府採購法第 73 條", "採購契約要項"],
+            questions: [
+              "驗收紀錄是否具體寫出符合或不符合的依據？",
+              "付款前是否已確認保固、保證金、違約金與歸檔文件？"
+            ]
+          }
+        ]
+      }
+    ];
+
+    const navGroupsEl = document.getElementById("navGroups");
+    const cardsEl = document.getElementById("cards");
+    const documentPackGridEl = document.getElementById("documentPackGrid");
+    const documentPackResultEl = document.getElementById("documentPackResult");
+    const memoGridEl = document.getElementById("memoGrid");
+    const memoResultEl = document.getElementById("memoResult");
+    const memoPriorityOptionsEl = document.getElementById("memoPriorityOptions");
+    const memoPriorityResultEl = document.getElementById("memoPriorityResult");
+    const memoCheckGroupsEl = document.getElementById("memoCheckGroups");
+    const memoCheckCountEl = document.querySelector("[data-memo-check-count]");
+    const memoCheckProgressEl = document.querySelector("[data-memo-check-progress]");
+    const memoCheckMessageEl = document.querySelector("[data-memo-check-message]");
+    const memoDraftOptionsEl = document.getElementById("memoDraftOptions");
+    const memoDraftResultEl = document.getElementById("memoDraftResult");
+
+    const documentPacks = [
+      {
+        id: "small",
+        title: "小額採購文件包",
+        summary: "先備齊請購、價格資料、驗收與付款憑證。",
+        reminder: "小額採購仍應注意需求、價格合理性、驗收與付款憑證完整，不代表不用留文件。",
+        flowCards: ["P003｜金額級距判斷", "P006｜招標文件一致性檢查", "P012｜驗收、付款與結案歸檔"],
+        flowReminder: "小額採購雖程序較簡化，仍應留意金額級距、文件一致性、驗收與付款憑證。",
+        documents: [
+          ["請購或簽呈", "校內自備"],
+          ["需求說明", "校內自備"],
+          ["報價資料或價格合理性資料", "校內自備"],
+          ["契約或訂購文件", "依案件需要"],
+          ["驗收紀錄", "工程會最新版範本或校內自備"],
+          ["付款憑證", "校內自備"],
+          ["財產或物品登錄資料", "校內自備"]
+        ]
+      },
+      {
+        id: "below-announcement",
+        title: "逾小額未達公告金額文件包",
+        summary: "補強報價、企劃書、比議價與採購方式簽核。",
+        reminder: "此級距常見風險是誤當小額採購、報價資料不足、限制性招標理由不完整。",
+        flowCards: ["P003｜金額級距判斷", "P005｜招標方式初步選擇", "P006｜招標文件一致性檢查", "P008｜公告、邀標與等標期檢核"],
+        flowReminder: "此級距應特別留意是否誤用小額採購、是否公開取得報價或企劃書、以及限制性招標理由是否完整。",
+        documents: [
+          ["採購簽呈", "校內自備"],
+          ["需求規格或工作說明", "校內自備"],
+          ["公開取得書面報價或企劃書相關文件", "工程會最新版範本或地方格式"],
+          ["報價單或企劃書", "廠商提供"],
+          ["廠商資格文件", "依招標文件"],
+          ["比價／議價／審查紀錄", "工程會最新版範本或校內自備"],
+          ["決定採購方式之簽核", "校內自備"],
+          ["契約或採購文件", "工程會最新版範本"],
+          ["驗收與付款文件", "工程會最新版範本或校內自備"]
+        ]
+      },
+      {
+        id: "announcement",
+        title: "公告金額以上文件包",
+        summary: "聚焦公告、招標、開審決標與契約履約文件。",
+        reminder: "公告金額以上案件，應特別注意公告、等標期、開標審標決標紀錄與招標文件一致性。",
+        flowCards: ["P003｜金額級距判斷", "P005｜招標方式初步選擇", "P006｜招標文件一致性檢查", "P008｜公告、邀標與等標期檢核", "P009｜開標、審標與評審程序", "P010｜決標、議價與決標公告"],
+        flowReminder: "公告金額以上案件應特別留意公告、等標期、開標審標決標紀錄與招標文件一致性。",
+        documents: [
+          ["採購簽呈", "校內自備"],
+          ["招標文件", "工程會最新版範本"],
+          ["投標須知", "工程會最新版範本"],
+          ["契約範本", "工程會最新版範本"],
+          ["廠商資格文件", "依招標文件"],
+          ["公告資料", "政府採購公告系統"],
+          ["開標紀錄", "工程會最新版範本"],
+          ["審標紀錄", "校內自備或機關格式"],
+          ["決標紀錄", "工程會最新版範本"],
+          ["決標公告", "政府採購公告系統"],
+          ["契約文件", "工程會最新版範本"],
+          ["履約管理文件", "校內自備"],
+          ["驗收與付款文件", "工程會最新版範本或校內自備"]
+        ]
+      },
+      {
+        id: "limited",
+        title: "限制性招標文件包",
+        summary: "保留法源款次、事實理由、佐證與議價紀錄。",
+        reminder: "限制性招標不能只寫便利、熟悉廠商或時間急迫，應有具體法源、事實理由與簽核紀錄。",
+        flowCards: ["P005｜招標方式初步選擇", "P006｜招標文件一致性檢查", "P010｜決標、議價與決標公告"],
+        flowReminder: "限制性招標應回到具體法源、事實理由與簽核紀錄，不宜只以便利、熟悉廠商或時間急迫作為理由。",
+        documents: [
+          ["採購簽呈", "校內自備"],
+          ["限制性招標理由說明", "系統撰寫提示或校內自備"],
+          ["政府採購法第 22 條適用款次", "法源確認"],
+          ["事實佐證資料", "校內自備"],
+          ["議價紀錄", "工程會最新版範本"],
+          ["契約文件", "工程會最新版範本"],
+          ["驗收付款文件", "工程會最新版範本或校內自備"]
+        ]
+      },
+      {
+        id: "selection",
+        title: "評選／最有利標文件包",
+        summary: "確認評選項目、配分、委員、會議與決標資料一致。",
+        reminder: "評選項目、配分、及格門檻、投標須知、公告與評審紀錄應前後一致。",
+        flowCards: ["P005｜招標方式初步選擇", "P006｜招標文件一致性檢查", "P007｜底價、預算與決標原則", "P009｜開標、審標與評審程序", "P010｜決標、議價與決標公告"],
+        flowReminder: "評選項目、配分、及格門檻、投標須知、公告與評審紀錄應前後一致。",
+        documents: [
+          ["評選方式簽呈", "校內自備"],
+          ["評選須知", "工程會最新版範本或校內自備"],
+          ["評選項目與配分", "校內自備"],
+          ["評審委員名單簽核", "校內自備"],
+          ["評審會議紀錄", "校內自備"],
+          ["評分表", "校內自備"],
+          ["序位或總評資料", "校內自備"],
+          ["決標紀錄", "工程會最新版範本"],
+          ["契約文件", "工程會最新版範本"]
+        ]
+      },
+      {
+        id: "acceptance",
+        title: "履約驗收付款文件包",
+        summary: "從契約回到履約成果、驗收紀錄與付款條件。",
+        reminder: "驗收與付款不得只看廠商請款，應回到契約、履約成果、驗收紀錄與付款條件。",
+        flowCards: ["P011｜簽約、履約管理與變更契約", "P012｜驗收、付款與結案歸檔", "P006｜招標文件一致性檢查"],
+        flowReminder: "驗收付款應回到契約、履約成果、驗收紀錄、付款條件與文件一致性，不宜只看廠商請款。",
+        documents: [
+          ["契約", "工程會最新版範本"],
+          ["履約期限紀錄", "校內自備"],
+          ["展延或變更契約簽核", "校內自備"],
+          ["交貨或服務完成證明", "廠商提供或校內自備"],
+          ["初驗紀錄", "工程會最新版範本"],
+          ["驗收紀錄", "工程會最新版範本"],
+          ["結算驗收證明書", "工程會最新版範本"],
+          ["請款資料", "廠商提供"],
+          ["保固或保證金資料", "工程會最新版範本或校內自備"],
+          ["財產登錄資料", "校內自備"]
+        ]
+      }
+    ];
+
+    const memoPrompts = [
+      {
+        id: "small",
+        title: "小額採購簽呈提示",
+        summary: "提醒請購、價格合理性、驗收與付款欄位。",
+        situation: "採購金額屬小額採購範圍，仍需辦理請購、核准、詢價或價格合理性確認、驗收與付款。",
+        sections: ["案由", "說明", "擬辦"],
+        fields: ["採購目的", "採購標的與需求內容", "經費來源", "預估金額", "採購性質", "價格合理性或詢價情形", "是否適用共同供應契約", "驗收與付款方式", "是否需財產或物品登錄"],
+        risk: "小額採購程序較簡化，但不代表可以省略需求、價格合理性、驗收與付款憑證。若同一需求被拆成多案辦理，應注意是否有分批規避疑慮。",
+        relatedCards: ["P001｜需求確認與採購目的", "P002｜採購性質分類", "P003｜金額級距判斷", "P006｜招標文件一致性檢查", "P012｜驗收、付款與結案歸檔"],
+        relatedNote: "小額採購雖程序較簡化，仍應確認需求、採購性質、金額級距、文件一致性、驗收與付款憑證完整。"
+      },
+      {
+        id: "below-announcement",
+        title: "逾小額未達公告金額採購簽呈提示",
+        summary: "提醒公開取得、限制性招標事由與地方規定。",
+        situation: "採購金額逾小額但未達公告金額，需確認公開取得報價或企劃書、限制性招標事由、地方主管規定及機關內部程序。",
+        sections: ["案由", "說明", "擬辦", "法源或程序依據"],
+        fields: ["採購目的與需求", "採購性質", "預估金額與經費來源", "金額級距判斷", "擬採招標方式", "是否公開取得三家以上廠商書面報價或企劃書", "若不公開取得，是否有法源依據與事實理由", "是否適用共同供應契約", "是否有分批辦理疑慮", "驗收與付款方式"],
+        risk: "此級距常見風險為誤當小額採購、報價或企劃書資料不足、限制性招標理由不完整，或未併同地方主管規定與機關內部程序確認。",
+        relatedCards: ["P002｜採購性質分類", "P003｜金額級距判斷", "P005｜招標方式初步選擇", "P006｜招標文件一致性檢查", "P008｜公告、邀標與等標期檢核", "P012｜驗收、付款與結案歸檔"],
+        relatedNote: "逾小額未達公告金額案件，應特別確認金額級距、公開取得報價或企劃書、限制性招標理由、文件留存及地方或機關內部程序。"
+      },
+      {
+        id: "limited",
+        title: "限制性招標簽呈提示",
+        summary: "提醒法源款次、事實理由、佐證與簽核層級。",
+        situation: "擬採限制性招標、議價或不經公告程序辦理時，需特別確認具體法源、事實理由與佐證資料。",
+        sections: ["案由", "說明", "法源依據", "事實理由", "擬辦"],
+        fields: ["採購目的與需求", "擬採限制性招標之具體原因", "政府採購法第 22 條適用款次或其他法源", "事實佐證資料", "是否非僅因便利、急迫、熟悉廠商或過去合作經驗", "預估金額與經費來源", "擬邀廠商或議價對象", "契約與驗收方式", "內部簽核層級"],
+        risk: "限制性招標不得只以便利、時間急迫、熟悉廠商或過去合作經驗作為理由；應具體說明法源依據、事實必要性及佐證資料。",
+        relatedCards: ["P002｜採購性質分類", "P003｜金額級距判斷", "P005｜招標方式初步選擇", "P006｜招標文件一致性檢查", "P007｜底價、預算與決標原則", "P010｜決標、議價與決標公告"],
+        relatedNote: "限制性招標應回到具體法源、事實理由與簽核程序，不宜僅以便利、急迫、熟悉廠商或過去合作經驗作為理由。"
+      },
+      {
+        id: "acceptance",
+        title: "履約驗收付款簽呈提示",
+        summary: "提醒契約、履約成果、驗收紀錄與付款條件。",
+        situation: "採購已進入履約、驗收、付款、契約變更、展延或結案歸檔階段。",
+        sections: ["案由", "說明", "履約或驗收情形", "擬辦"],
+        fields: ["契約名稱與案號", "契約金額", "履約期限", "實際交貨或完成日期", "是否有展延、變更契約或逾期", "驗收方式與驗收結果", "是否需改善或複驗", "付款條件", "保固、保證金或違約金", "財產或物品登錄", "結案歸檔文件"],
+        risk: "驗收與付款不得只依廠商請款辦理，應回到契約、履約成果、驗收紀錄、付款條件與文件一致性檢查。",
+        relatedCards: ["P006｜招標文件一致性檢查", "P011｜簽約、履約管理與變更契約", "P012｜驗收、付款與結案歸檔"],
+        relatedNote: "履約、驗收與付款階段應回頭確認契約條款、履約紀錄、驗收結果、付款條件、保固或保證金等資料是否一致。"
+      }
+    ];
+
+    const memoPriorityContexts = [
+      {
+        id: "small",
+        title: "小額採購",
+        fields: [
+          "採購名稱",
+          "需求單位或承辦單位",
+          "經費來源",
+          "預算金額或概估金額",
+          "採購目的或需求背景",
+          "採購性質",
+          "金額級距",
+          "驗收方式",
+          "付款方式或付款條件",
+          "是否檢查分批辦理疑慮"
+        ],
+        note: "小額採購雖程序較簡化，仍應確認需求、經費、金額級距、採購性質、驗收付款及分批辦理風險。"
+      },
+      {
+        id: "below-announcement",
+        title: "逾小額未達公告金額",
+        fields: [
+          "經費來源",
+          "預算金額或概估金額",
+          "採購性質",
+          "金額級距",
+          "擬採招標方式",
+          "主要法源依據",
+          "採購程序或辦理方式",
+          "公開取得報價或企劃書辦理方式",
+          "預計使用之招標文件或契約範本",
+          "地方政府或機關內部程序需另行確認"
+        ],
+        note: "逾小額未達公告金額案件，應特別確認金額級距、招標方式、公開取得報價或企劃書、地方規定與文件留存。"
+      },
+      {
+        id: "limited",
+        title: "限制性招標",
+        fields: [
+          "採購目的或需求背景",
+          "採購性質",
+          "金額級距",
+          "擬採招標方式",
+          "特殊採購情形理由與依據",
+          "主要法源依據",
+          "限制性招標具體法源與事實理由",
+          "是否確認未僅以便利、急迫或熟悉廠商作為限制性招標理由",
+          "簽呈、招標文件、契約與驗收付款資料一致性"
+        ],
+        note: "限制性招標的重點不在「想找誰」，而在是否有具體法源、事實理由、簽核程序與文件一致性。"
+      },
+      {
+        id: "acceptance",
+        title: "履約驗收付款",
+        fields: [
+          "採購名稱",
+          "經費來源",
+          "簽呈、招標文件、契約與驗收付款資料一致性",
+          "履約期限或預計完成期限",
+          "驗收方式",
+          "付款方式或付款條件",
+          "保固、保證金、違約金或履約管理事項",
+          "本簽呈僅為申請或簽核文件，後續仍須依採購程序辦理"
+        ],
+        note: "履約驗收付款階段應回頭確認契約條款、履約紀錄、驗收結果、付款條件及相關憑證是否前後一致。"
+      }
+    ];
+
+    const memoCheckGroups = [
+      {
+        title: "一、基本資料",
+        items: [
+          "是否載明採購名稱。",
+          "是否載明需求單位或承辦單位。",
+          "是否載明經費來源。",
+          "是否載明預算金額或概估金額。",
+          "是否載明採購目的或需求背景。"
+        ]
+      },
+      {
+        title: "二、採購判斷",
+        items: [
+          "是否說明採購性質為工程、財物、勞務或混合採購。",
+          "是否確認金額級距。",
+          "是否說明擬採招標方式。",
+          "若涉及特殊採購情形，是否說明理由與依據。",
+          "是否提醒地方政府或機關內部程序需另行確認。"
+        ]
+      },
+      {
+        title: "三、法源與程序",
+        items: [
+          "是否列明主要法源依據。",
+          "是否說明採購程序或辦理方式。",
+          "若採限制性招標，是否列明具體法源與事實理由。",
+          "若採公開取得報價或企劃書，是否說明預計辦理方式。",
+          "若涉及評選、最有利標或評分及格最低標，是否說明評選或審查方式。"
+        ]
+      },
+      {
+        title: "四、文件與附件",
+        items: [
+          "是否列出預計使用之招標文件或契約範本。",
+          "是否提醒正式文件應至工程會下載最新版範本。",
+          "是否列出需求規格、估價資料、報價資料或相關附件。",
+          "是否確認簽呈、招標文件、契約與驗收付款資料應保持一致。"
+        ]
+      },
+      {
+        title: "五、履約與驗收",
+        items: [
+          "是否載明履約期限或預計完成期限。",
+          "是否載明驗收方式。",
+          "是否載明付款方式或付款條件。",
+          "是否提醒保固、保證金、違約金或履約管理事項，如適用。"
+        ]
+      },
+      {
+        title: "六、高風險提醒",
+        items: [
+          "是否檢查是否有分批辦理疑慮。",
+          "是否確認未僅以便利、急迫或熟悉廠商作為限制性招標理由。",
+          "是否確認採購分類、金額級距、招標方式與文件內容一致。",
+          "是否確認本簽呈僅為申請或簽核文件，後續仍須依採購程序辦理。"
+        ]
+      }
+    ];
+
+    const memoDraftStructures = [
+      {
+        id: "small",
+        title: "小額採購",
+        subject: "為辦理○○採購案，簽請核示。",
+        explanation: [
+          "說明採購需求、使用目的及需求單位。",
+          "說明經費來源、預算金額或概估金額。",
+          "說明採購性質與金額級距，並確認是否屬小額採購範圍。",
+          "說明擬依學校或機關內部程序辦理詢價、議價、驗收及付款。"
+        ],
+        proposal: [
+          "擬依小額採購相關規定及機關內部程序辦理。",
+          "擬於完成採購後辦理驗收、付款及相關憑證留存。"
+        ],
+        attachments: [
+          "需求說明或請購資料",
+          "經費來源資料",
+          "估價、詢價或報價資料",
+          "其他相關佐證文件"
+        ],
+        risks: [
+          "小額採購仍應注意不得分批辦理以規避較高金額級距。",
+          "應保留合理價格資料、驗收紀錄及付款憑證。",
+          "地方政府或學校內部程序如有更嚴格規定，應併同確認。"
+        ]
+      },
+      {
+        id: "below-announcement",
+        title: "逾小額未達公告金額",
+        subject: "為辦理○○採購案，擬採○○方式辦理，簽請核示。",
+        explanation: [
+          "說明採購需求、經費來源及預算金額。",
+          "說明採購性質與金額級距，確認屬逾小額未達公告金額。",
+          "說明擬採之辦理方式，例如公開取得書面報價或企劃書，或依法採限制性招標。",
+          "若不公開取得，應說明具體法源依據、事實理由及簽核必要性。",
+          "說明地方政府或機關內部程序是否另有規定，並併同確認。"
+        ],
+        proposal: [
+          "擬依政府採購法及未達公告金額採購相關規定辦理。",
+          "擬辦理公告、邀商、取得報價或企劃書、審查、決標及後續驗收付款作業。",
+          "擬檢附相關招標文件、需求規格及法源依據資料。"
+        ],
+        attachments: [
+          "需求說明",
+          "經費來源資料",
+          "採購性質與金額級距判斷資料",
+          "招標方式或辦理方式說明",
+          "估價或市場行情資料",
+          "擬使用之招標文件或契約草案"
+        ],
+        risks: [
+          "逾小額未達公告金額案件，不宜誤用小額採購程序。",
+          "若採限制性招標，應回到具體法源與事實理由。",
+          "應確認地方主管機關與學校內部程序。"
+        ]
+      },
+      {
+        id: "limited",
+        title: "限制性招標",
+        subject: "為辦理○○採購案，擬採限制性招標方式辦理，簽請核示。",
+        explanation: [
+          "說明採購需求、採購性質、經費來源及預算金額。",
+          "說明金額級距及本案擬採限制性招標之理由。",
+          "說明適用之具體法源依據。",
+          "說明事實理由、必要性、不可替代性或其他限制性招標要件。",
+          "說明擬邀廠商、履約內容、價格合理性及文件一致性確認方式。"
+        ],
+        proposal: [
+          "擬依政府採購法第 22 條或其他適用規定辦理限制性招標。",
+          "擬辦理議價、決標、簽約、履約管理及驗收付款作業。",
+          "擬於招標與履約過程留存相關簽核、議價、決標及驗收文件。"
+        ],
+        attachments: [
+          "需求說明",
+          "經費來源資料",
+          "限制性招標理由說明",
+          "法源依據資料",
+          "擬邀廠商資料或市場供應情形",
+          "價格合理性佐證資料",
+          "契約草案或需求規格"
+        ],
+        risks: [
+          "限制性招標不得僅以便利、急迫、熟悉廠商或過去合作經驗作為理由。",
+          "應確認法源依據與事實理由具體、明確。",
+          "應注意簽呈、招標文件、契約、驗收與付款資料一致。"
+        ]
+      },
+      {
+        id: "acceptance",
+        title: "履約驗收付款",
+        subject: "為辦理○○採購案履約、驗收或付款事宜，簽請核示。",
+        explanation: [
+          "說明原採購案名稱、契約或決標資訊。",
+          "說明履約情形、完成情形或需辦理事項。",
+          "說明驗收結果、改善情形或付款條件。",
+          "說明經費來源、應付款項、保固、保證金或違約金等相關事項。",
+          "若涉及契約變更、展延或爭議，應說明原因、依據及處理方式。"
+        ],
+        proposal: [
+          "擬依契約約定及機關內部程序辦理驗收、付款、保固或後續管理。",
+          "擬檢附驗收紀錄、履約文件、付款憑證及相關佐證資料。",
+          "如涉及變更契約或展延，擬依相關規定另案簽核或併案辦理。"
+        ],
+        attachments: [
+          "契約或決標文件",
+          "履約成果或交付資料",
+          "驗收紀錄",
+          "改善完成資料，如適用",
+          "發票、請款文件或付款資料",
+          "保固、保證金、違約金或其他相關文件"
+        ],
+        risks: [
+          "履約驗收付款階段應回頭確認契約條款、履約紀錄、驗收結果與付款條件是否一致。",
+          "不應在驗收付款階段才補正前階段重大程序缺漏。",
+          "若涉及契約變更、展延或爭議，應先確認法源、契約條款與機關內部程序。"
+        ]
+      }
+    ];
+
+    function makeList(items) {
+      return items.map((item) => `<li>${item}</li>`).join("");
+    }
+
+    function makeLaws(items) {
+      return items.map((item) => `<li>${item}</li>`).join("");
+    }
+
+    function tagClass(step, tag) {
+      if (step.emphasis === "amount" || tag.includes("金額") || tag.includes("公告")) return "tag is-amount";
+      if (step.emphasis === "risk" || tag.includes("風險") || tag.includes("一致")) return "tag is-risk";
+      return "tag";
+    }
+
+    function getStepTarget(label) {
+      const match = label.match(/^(P\d{3})/);
+      return match ? match[1] : "";
+    }
+
+    function renderGuideButton(label, target, className = "internal-chip") {
+      return `<button class="${className}" type="button" data-internal-target="${target}">${label}</button>`;
+    }
+
+    function renderStepGuidePills(items) {
+      return items.map((item) => {
+        const target = getStepTarget(item);
+        if (!target) return `<li>${item}</li>`;
+        return `<li class="is-guide">${renderGuideButton(item, target)}</li>`;
+      }).join("");
+    }
+
+    function getDocumentGuides(name, source) {
+      const guides = [];
+      const addGuide = (label, target) => {
+        if (!guides.some((guide) => guide.label === label && guide.target === target)) {
+          guides.push({ label, target });
+        }
+      };
+
+      if (source.includes("工程會") || source.includes("範本") || source.includes("官方範本")) {
+        addGuide(source, "template-update-note");
+        if (source.includes("校內自備")) addGuide("校內自備", "memo-guide");
+      } else if (source.includes("校內自備")) {
+        addGuide(source, "memo-guide");
+      }
+      if (/簽呈|簽核|請購|限制性招標理由|評選方式/.test(name)) {
+        addGuide("簽呈欄位檢核", "memo-checklist");
+        addGuide("草稿結構參考", "memo-draft");
+      }
+      if (name.includes("採購性質")) addGuide("採購性質判斷", "P002");
+      if (name.includes("金額級距")) addGuide("金額級距判斷", "P003");
+      if (/招標方式|辦理方式|公開取得/.test(name)) addGuide("招標方式確認", "P005");
+      if (/一致|契約文件|驗收與付款|履約管理/.test(name)) addGuide("文件一致性檢查", "P006");
+      if (/底價|決標原則|評選項目|配分|評選須知|評分表|序位|總評/.test(name)) addGuide("底價決標提醒", "P007");
+      return guides;
+    }
+
+    function renderDocumentGuideTags(name, source) {
+      const guides = getDocumentGuides(name, source);
+      if (!guides.length) return `<span class="source-badge">${source}</span>`;
+      return `
+        <span class="source-guide-list">
+          ${guides.map((guide, index) => renderGuideButton(guide.label, guide.target, `source-badge${index > 0 ? " is-helper" : ""}`)).join("")}
+        </span>
+      `;
+    }
+
+    function renderDocumentPackCards(activeId) {
+      documentPackGridEl.innerHTML = documentPacks.map((pack) => `
+        <button class="document-pack-card ${pack.id === activeId ? "is-active" : ""}" type="button" data-pack-id="${pack.id}">
+          <strong>${pack.title}</strong>
+          <span>${pack.summary}</span>
+        </button>
+      `).join("");
+    }
+
+    function renderDocumentPackResult(packId) {
+      const pack = documentPacks.find((item) => item.id === packId) || documentPacks[0];
+      documentPackResultEl.innerHTML = `
+        <h3>${pack.title}</h3>
+        <p class="document-pack-reminder">${pack.reminder}</p>
+        <ul class="document-list">
+          ${pack.documents.map(([name, source]) => `
+            <li>
+              <span>${name}</span>
+              ${renderDocumentGuideTags(name, source)}
+            </li>
+          `).join("")}
+        </ul>
+        <section class="document-flow-hint" aria-label="建議搭配查看流程卡">
+          <h4>建議搭配查看流程卡</h4>
+          <ul class="flow-pill-list">
+            ${renderStepGuidePills(pack.flowCards)}
+          </ul>
+          <p class="flow-hint-note">${pack.flowReminder}</p>
+        </section>
+      `;
+      renderDocumentPackCards(pack.id);
+    }
+
+    function setupDocumentPacks() {
+      if (!documentPackGridEl || !documentPackResultEl) return;
+      renderDocumentPackCards(documentPacks[0].id);
+      renderDocumentPackResult(documentPacks[0].id);
+      documentPackGridEl.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-pack-id]");
+        if (!button) return;
+        renderDocumentPackResult(button.dataset.packId);
+      });
+    }
+
+    function renderMemoCards(activeId) {
+      memoGridEl.innerHTML = memoPrompts.map((prompt) => `
+        <button class="memo-card ${prompt.id === activeId ? "is-active" : ""}" type="button" data-memo-id="${prompt.id}">
+          <strong>${prompt.title}</strong>
+          <span>${prompt.summary}</span>
+        </button>
+      `).join("");
+    }
+
+    function renderMemoResult(promptId) {
+      const prompt = memoPrompts.find((item) => item.id === promptId) || memoPrompts[0];
+      memoResultEl.innerHTML = `
+        <h3>${prompt.title}</h3>
+        <div class="memo-result-grid">
+          <section class="memo-section full">
+            <h4>適用情境</h4>
+            <p>${prompt.situation}</p>
+          </section>
+          <section class="memo-section">
+            <h4>建議段落</h4>
+            <ul>${prompt.sections.map((item) => `<li>${item}</li>`).join("")}</ul>
+          </section>
+          <section class="memo-section">
+            <h4>應確認欄位</h4>
+            <ul>${prompt.fields.map((item) => `<li>${item}</li>`).join("")}</ul>
+          </section>
+          <section class="memo-section memo-risk full">
+            <h4>高風險提醒</h4>
+            <p>${prompt.risk}</p>
+          </section>
+          <section class="memo-section memo-related full">
+            <h4>建議搭配查看</h4>
+            <ul>${renderStepGuidePills(prompt.relatedCards)}</ul>
+            <p>${prompt.relatedNote}</p>
+          </section>
+        </div>
+      `;
+      renderMemoCards(prompt.id);
+    }
+
+    function setupMemoPrompts() {
+      if (!memoGridEl || !memoResultEl) return;
+      renderMemoCards(memoPrompts[0].id);
+      renderMemoResult(memoPrompts[0].id);
+      memoGridEl.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-memo-id]");
+        if (!button) return;
+        renderMemoResult(button.dataset.memoId);
+      });
+    }
+
+    function renderMemoPriorityOptions(activeId) {
+      memoPriorityOptionsEl.innerHTML = memoPriorityContexts.map((context) => `
+        <button class="memo-priority-option ${context.id === activeId ? "is-active" : ""}" type="button" data-memo-priority-id="${context.id}">
+          ${context.title}
+        </button>
+      `).join("");
+    }
+
+    function renderMemoPriorityResult(contextId) {
+      const context = memoPriorityContexts.find((item) => item.id === contextId) || memoPriorityContexts[0];
+      memoPriorityResultEl.innerHTML = `
+        <h4>${context.title}優先檢查欄位</h4>
+        <ul class="priority-pill-list">
+          ${context.fields.map((item) => `<li>${item}</li>`).join("")}
+        </ul>
+        <p class="memo-priority-note">${context.note}</p>
+      `;
+      renderMemoPriorityOptions(context.id);
+    }
+
+    function setupMemoPriorityHints() {
+      if (!memoPriorityOptionsEl || !memoPriorityResultEl) return;
+      renderMemoPriorityOptions(memoPriorityContexts[0].id);
+      renderMemoPriorityResult(memoPriorityContexts[0].id);
+      memoPriorityOptionsEl.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-memo-priority-id]");
+        if (!button) return;
+        renderMemoPriorityResult(button.dataset.memoPriorityId);
+      });
+    }
+
+    function updateMemoChecklist() {
+      if (!memoCheckGroupsEl || !memoCheckCountEl || !memoCheckProgressEl || !memoCheckMessageEl) return;
+      const checks = [...memoCheckGroupsEl.querySelectorAll("[data-memo-check-item]")];
+      const checked = checks.filter((item) => item.checked).length;
+      const total = checks.length;
+      memoCheckCountEl.textContent = `已檢查 ${checked} / 總項目 ${total}`;
+      memoCheckProgressEl.textContent = `完成度 ${checked} / ${total}`;
+      const complete = total > 0 && checked === total;
+      memoCheckMessageEl.textContent = complete
+        ? "本頁簽呈欄位已完成初步檢查，仍請依學校公文系統、機關內部程序及實際案件內容辦理。"
+        : "仍有簽呈欄位尚未完成檢查，建議送出前再次確認欄位、附件與法源依據。";
+      memoCheckMessageEl.classList.toggle("is-complete", complete);
+    }
+
+    function setupMemoChecklist() {
+      if (!memoCheckGroupsEl) return;
+      memoCheckGroupsEl.innerHTML = memoCheckGroups.map((group, groupIndex) => `
+        <section class="memo-check-group">
+          <h3>${group.title}</h3>
+          <ul class="memo-check-list">
+            ${group.items.map((item, itemIndex) => `
+              <li>
+                <label>
+                  <input type="checkbox" data-memo-check-item id="memoCheck${groupIndex}-${itemIndex}">
+                  <span>${item}</span>
+                </label>
+              </li>
+            `).join("")}
+          </ul>
+        </section>
+      `).join("");
+      memoCheckGroupsEl.addEventListener("change", (event) => {
+        if (!event.target.matches("[data-memo-check-item]")) return;
+        updateMemoChecklist();
+      });
+      updateMemoChecklist();
+    }
+
+    function renderMemoDraftOptions(activeId) {
+      memoDraftOptionsEl.innerHTML = memoDraftStructures.map((item) => `
+        <button class="memo-draft-option ${item.id === activeId ? "is-active" : ""}" type="button" data-memo-draft-id="${item.id}">
+          ${item.title}
+        </button>
+      `).join("");
+    }
+
+    function renderMemoDraftResult(draftId) {
+      const draft = memoDraftStructures.find((item) => item.id === draftId) || memoDraftStructures[0];
+      memoDraftResultEl.innerHTML = `
+        <h3>${draft.title}結構預覽</h3>
+        <div class="memo-draft-grid">
+          <section class="memo-draft-section full">
+            <h4>一、案由範例（請依實際案件改寫）</h4>
+            <p>${draft.subject}</p>
+          </section>
+          <section class="memo-draft-section">
+            <h4>二、說明段落建議</h4>
+            <ul>${draft.explanation.map((item) => `<li>${item}</li>`).join("")}</ul>
+          </section>
+          <section class="memo-draft-section">
+            <h4>三、擬辦段落建議</h4>
+            <ul>${draft.proposal.map((item) => `<li>${item}</li>`).join("")}</ul>
+          </section>
+          <section class="memo-draft-section">
+            <h4>四、附件清單建議</h4>
+            <ul>${draft.attachments.map((item) => `<li>${item}</li>`).join("")}</ul>
+          </section>
+          <section class="memo-draft-section is-risk">
+            <h4>五、風險提醒</h4>
+            <ul>${draft.risks.map((item) => `<li>${item}</li>`).join("")}</ul>
+          </section>
+        </div>
+      `;
+      renderMemoDraftOptions(draft.id);
+    }
+
+    function setupMemoDraftPreview() {
+      if (!memoDraftOptionsEl || !memoDraftResultEl) return;
+      renderMemoDraftOptions(memoDraftStructures[0].id);
+      renderMemoDraftResult(memoDraftStructures[0].id);
+      memoDraftOptionsEl.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-memo-draft-id]");
+        if (!button) return;
+        renderMemoDraftResult(button.dataset.memoDraftId);
+      });
+    }
+
+    function renderAmountTool() {
+      return `
+        <section class="amount-tool" aria-labelledby="amountToolTitle">
+          <div class="amount-tool-head">
+            <div>
+              <h4 id="amountToolTitle">金額級距快速判斷</h4>
+              <p class="amount-tool-note">輸入採購性質與預算金額，即時顯示初步級距與程序提醒。</p>
+            </div>
+            <span class="tag is-amount">新臺幣元</span>
+          </div>
+          <div class="amount-form">
+            <div class="amount-field">
+              <label for="purchaseType">採購性質</label>
+              <select id="purchaseType" data-amount-type>
+                <option value="工程">工程</option>
+                <option value="財物">財物</option>
+                <option value="勞務">勞務</option>
+              </select>
+            </div>
+            <div class="amount-field">
+              <label for="purchaseAmount">預算金額</label>
+              <input id="purchaseAmount" data-amount-input type="number" inputmode="numeric" min="1" step="1" placeholder="例如 150000、1490000、50000000">
+              <span class="amount-unit">單位：新臺幣元</span>
+            </div>
+          </div>
+          <div class="amount-result is-warning" data-amount-result aria-live="polite">
+            <p class="amount-result-title">請輸入有效的採購金額。</p>
+            <div class="amount-result-grid">
+              <p class="amount-result-item"><strong>對應提醒</strong>輸入後會顯示初步級距提醒。</p>
+              <p class="amount-result-item"><strong>可能適用程序提醒</strong>請併同採購性質與機關規定判斷。</p>
+              <p class="amount-result-item"><strong>高風險提醒</strong>請勿僅以金額判斷採購方式。</p>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    const classificationGroups = [
+      {
+        key: "engineering",
+        label: "工程",
+        title: "工程線索",
+        items: [
+          "是否涉及建築、土木、水利、環境、交通、機械、電氣、化工等工程施作。",
+          "是否涉及定著於土地或建築物之新建、增建、改建、修繕、拆除。",
+          "是否涉及現場施工、工項管理、施工安全、估驗或工程驗收。"
+        ]
+      },
+      {
+        key: "property",
+        label: "財物",
+        title: "財物線索",
+        items: [
+          "是否主要取得物品、材料、設備、機具或其他動產。",
+          "是否主要取得不動產、權利或其他財物。",
+          "是否以交付成品、設備、物件或財產權利為主要履約內容。"
+        ]
+      },
+      {
+        key: "service",
+        label: "勞務",
+        title: "勞務線索",
+        items: [
+          "是否主要取得專業服務、技術服務、資訊服務、研究發展或營運管理。",
+          "是否主要取得維修、訓練、人力、顧問、規劃、設計、監造或其他服務。",
+          "是否以人力、知識、技術、時間或服務成果為主要履約內容。"
+        ]
+      }
+    ];
+
+    const classificationNextSteps = {
+      engineering: ["P003｜金額級距判斷", "P005｜招標方式初步選擇", "P006｜文件一致性檢查", "P011｜履約管理與變更契約", "P012｜驗收付款"],
+      property: ["P003｜金額級距判斷", "P005｜招標方式初步選擇", "P006｜文件一致性檢查", "P008｜公告、邀標與等標期檢核", "P012｜驗收付款"],
+      service: ["P003｜金額級距判斷", "P005｜招標方式初步選擇", "P006｜文件一致性檢查", "P007｜底價、預算與決標原則", "P009｜開標、審標與評審程序"],
+      mixed: ["P003｜金額級距判斷", "P005｜招標方式初步選擇", "P006｜文件一致性檢查"]
+    };
+
+    const classificationRiskItems = [
+      "不要只看品名判斷採購性質，應看實際履約內容。",
+      "含安裝、施工、維修、設定、教育訓練或顧問服務者，應檢視是否有混合性質。",
+      "若分類錯誤，可能影響招標文件、契約範本、決標原則、履約管理、驗收及監辦判斷。",
+      "若涉及資訊服務、技術服務、規劃設計監造或專業服務，應確認是否有特別規定或適用範本。",
+      "採購性質分類應與 P003 金額級距、P005 招標方式及 P006 文件一致性檢查互相對照。"
+    ];
+
+    function renderClassificationTool() {
+      return `
+        <section class="classification-tool" aria-labelledby="classificationToolTitle">
+          <div class="classification-head">
+            <div>
+              <h4 id="classificationToolTitle">採購性質分類提示</h4>
+              <p class="classification-note">本區只提供分類思考輔助，不作成正式採購性質認定，不取代機關簽核、採購專業判斷或主管機關解釋。</p>
+            </div>
+            <span class="tag is-risk">初步提示</span>
+          </div>
+          <div class="classification-grid">
+            ${classificationGroups.map((group) => `
+              <section class="classification-group">
+                <h5>${group.title}</h5>
+                <ul class="classification-list">
+                  ${group.items.map((item) => `
+                    <li>
+                      <label>
+                        <input type="checkbox" value="${group.key}" data-classification-clue>
+                        <span>${item}</span>
+                      </label>
+                    </li>
+                  `).join("")}
+                </ul>
+              </section>
+            `).join("")}
+          </div>
+          <section class="classification-budget">
+            <h5>預算占比初步輸入</h5>
+            <div class="budget-grid">
+              ${classificationGroups.map((group) => `
+                <div class="budget-field">
+                  <label for="${group.key}Budget">${group.label}金額</label>
+                  <input id="${group.key}Budget" data-classification-budget="${group.key}" type="number" inputmode="numeric" min="0" step="1" placeholder="新臺幣元">
+                </div>
+              `).join("")}
+            </div>
+          </section>
+          <div data-classification-result aria-live="polite"></div>
+        </section>
+      `;
+    }
+
+    const tenderTierGuidance = {
+      small: {
+        label: "小額採購",
+        reminder: "可能屬小額採購範圍，仍應依機關內部程序辦理請購、核准、詢價或議價、驗收及付款。",
+        checks: [
+          "是否有分批辦理以規避較高金額級距之疑慮。",
+          "是否已有合理價格資料或詢價紀錄。",
+          "是否需依機關內部規定取得一定家數報價。",
+          "是否屬共同供應契約項目。"
+        ]
+      },
+      belowAnnouncement: {
+        label: "逾小額未達公告金額",
+        reminder: "已逾小額採購，應注意未達公告金額採購招標辦法；通常需確認是否公開取得三家以上廠商書面報價或企劃書，或是否符合限制性招標事由。",
+        checks: [
+          "是否依政府採購法第 49 條公開取得三家以上廠商書面報價或企劃書。",
+          "若不公開取得，是否有政府採購法第 22 條限制性招標事由。",
+          "是否有簽呈載明招標方式、理由與法源依據。",
+          "是否有避免規避公告金額之疑慮。"
+        ]
+      },
+      announcement: {
+        label: "公告金額以上未達查核金額",
+        reminder: "已達公告金額，原則應依政府採購法辦理公告程序；招標方式可能涉及公開招標、選擇性招標或依法採限制性招標。",
+        checks: [
+          "是否採公開招標，並注意公告、等標期、開標、審標、決標程序。",
+          "若採選擇性招標，是否有建立合格廠商名單或符合相關程序。",
+          "若採限制性招標，是否符合政府採購法第 22 條事由並完成簽核。",
+          "是否涉及最有利標、評分及格最低標或評選程序。",
+          "招標文件、決標原則、評審項目及契約內容是否一致。"
+        ]
+      },
+      audit: {
+        label: "查核金額以上",
+        reminder: "已達查核金額，除一般公告與招標程序外，應注意監辦、上級或內部簽核層級、重大採購風險與文件完整性。",
+        checks: [
+          "是否應通知上級機關或監辦單位。",
+          "是否需更高層級核定或審查。",
+          "是否涉及重大採購之評選、底價、決標與履約管理風險。",
+          "是否已完整保存公告、招標、開標、評審、決標、契約、驗收與付款文件。"
+        ]
+      }
+    };
+
+    const tenderSpecialOptions = [
+      {
+        id: "limited",
+        label: "是否擬採限制性招標",
+        reminder: "限制性招標不得僅以便利、急迫、熟悉廠商或過去合作經驗作為理由；應確認具體法源依據、事實理由與簽核文件。"
+      },
+      {
+        id: "jointSupply",
+        label: "是否可能適用共同供應契約",
+        reminder: "請先確認採購標的是否屬共同供應契約項目，並依共同供應契約及機關內部程序辦理。"
+      },
+      {
+        id: "service",
+        label: "是否涉及專業服務、技術服務或資訊服務",
+        reminder: "請確認是否有適用之採購類型、評選程序、契約範本或服務建議書要求，並注意評審項目與契約內容一致。"
+      },
+      {
+        id: "urgent",
+        label: "是否涉及緊急、原有採購後續擴充、專屬權利或相容性需求",
+        reminder: "請特別確認事實是否具體、必要性是否明確，並避免以概括理由取代法定限制性招標要件。"
+      },
+      {
+        id: "bestValue",
+        label: "是否可能採最有利標或評分及格最低標",
+        reminder: "請確認是否有評選項目、配分、及格門檻、評審委員、會議紀錄與核准程序，並與招標文件一致。"
+      },
+      {
+        id: "mixed",
+        label: "是否可能涉及工程、財物、勞務混合",
+        reminder: "請回到 P002 採購性質分類與 P006 文件一致性檢查，確認主要目的、預算占比、履約內容與文件適用是否一致。"
+      }
+    ];
+
+    const priceTierGuidance = {
+      small: {
+        label: "小額採購",
+        reminder: "小額採購仍應注意預算來源、合理價格資料、詢價或議價紀錄、驗收與付款憑證；是否訂定底價或採其他價格控制方式，應依機關內部程序與實際案件確認。"
+      },
+      belowAnnouncement: {
+        label: "逾小額未達公告金額",
+        reminder: "逾小額未達公告金額案件，應確認預算金額、報價或企劃書取得方式、價格合理性判斷、是否議價及相關紀錄留存。"
+      },
+      announcement: {
+        label: "公告金額以上未達查核金額",
+        reminder: "公告金額以上案件，應特別注意預算金額、底價訂定或不訂底價之理由、決標原則、開標審標決標紀錄與招標文件一致性。"
+      },
+      audit: {
+        label: "查核金額以上",
+        reminder: "查核金額以上案件，除預算、底價與決標原則外，應注意監辦、上級或內部簽核層級、重大採購風險及完整文件留存。"
+      }
+    };
+
+    const awardPrincipleGuidance = {
+      lowest: {
+        label: "最低標",
+        reminder: "採最低標時，應確認投標須知、招標公告、契約文件與決標紀錄對決標原則之記載一致，並注意是否涉及低於底價、標價偏低或價格合理性問題。"
+      },
+      best: {
+        label: "最有利標",
+        reminder: "採最有利標或準用最有利標精神時，應確認核准程序、評選項目、配分、評選委員、會議紀錄及招標文件之一致性；評選項目、評審標準及評定方式應依規定載明於招標文件，並依最有利標評選辦法及相關程序辦理。本系統不判斷是否得採最有利標。"
+      },
+      qualifiedLowest: {
+        label: "評分及格最低標",
+        reminder: "採評分及格最低標時，應確認評分項目、及格門檻、價格標開啟條件、審查紀錄與決標紀錄之一致性；評分及格最低標仍屬最低標決標架構下之審查方式，應依政府採購法施行細則第 64 條之 2 及招標文件辦理。"
+      },
+      fixed: {
+        label: "固定價格或費率",
+        reminder: "採固定價格或費率時，應確認預算、價格或費率設定依據、服務內容、評選或審查方式及契約文件之一致性。"
+      },
+      unknown: {
+        label: "尚未確認",
+        reminder: "尚未確認決標原則時，建議先回到 P002 採購性質分類、P003 金額級距判斷、P005 招標方式初步選擇及 P006 文件一致性檢查，釐清案件條件後再行簽核。"
+      }
+    };
+
+    const reviewProcedureOptions = [
+      {
+        id: "meeting",
+        label: "是否需成立評審或審查相關會議",
+        reminder: "請確認會議組成、委員資格、利益迴避、會議紀錄及簽核程序。"
+      },
+      {
+        id: "criteria",
+        label: "是否有評審項目、配分或及格門檻",
+        reminder: "請確認評審項目、配分、及格門檻是否於招標文件中明確記載，且不得任意事後變更。"
+      },
+      {
+        id: "proposal",
+        label: "是否涉及服務建議書、企劃書或技術建議書",
+        reminder: "請確認文件名稱、提交方式、審查標準、評分方式及廠商應備資料是否一致。"
+      },
+      {
+        id: "committee",
+        label: "是否涉及評選委員、審查委員或外聘委員",
+        reminder: "請確認委員遴聘、保密、利益迴避、出席紀錄與會議程序。"
+      },
+      {
+        id: "price",
+        label: "是否涉及價格合理性、底價或議價程序",
+        reminder: "請確認價格資料、底價或不訂底價理由、議價紀錄及決標紀錄是否完整。"
+      }
+    ];
+
+    const priceRiskItems = [
+      "決標原則應與簽呈、投標須知、招標公告、評審資料、決標紀錄及契約文件一致。",
+      "評審項目、配分、及格門檻、價格標開啟條件不得前後矛盾。",
+      "底價、預算金額、報價資料、議價紀錄與決標金額應可相互對照。",
+      "若採最有利標、評分及格最低標或涉及評選，應特別注意核准程序、委員組成、利益迴避及會議紀錄。",
+      "若不確定決標原則，應先暫緩進一步文件定稿，回到 P002、P003、P005、P006 交叉確認。"
+    ];
+
+    function renderPriceTool() {
+      return `
+        <section class="price-tool" aria-labelledby="priceToolTitle">
+          <div class="price-head">
+            <div>
+              <h4 id="priceToolTitle">底價、預算與決標原則提示</h4>
+              <p class="price-note">本區僅提供底價、預算與決標原則之檢核提示，不作成底價訂定、決標方式或評選程序之決定；實際案件仍應依政府採購法、相關子法、主管機關函釋、招標文件及機關內部程序辦理。</p>
+            </div>
+            <span class="tag is-risk">檢核提示</span>
+          </div>
+          <div class="price-form">
+            <div class="price-field">
+              <label for="priceTier">採購金額級距</label>
+              <select id="priceTier" data-price-tier>
+                <option value="small">小額採購</option>
+                <option value="belowAnnouncement">逾小額未達公告金額</option>
+                <option value="announcement">公告金額以上未達查核金額</option>
+                <option value="audit">查核金額以上</option>
+              </select>
+            </div>
+            <div class="price-field">
+              <label for="awardPrinciple">預計決標原則</label>
+              <select id="awardPrinciple" data-price-award>
+                <option value="lowest">最低標</option>
+                <option value="best">最有利標</option>
+                <option value="qualifiedLowest">評分及格最低標</option>
+                <option value="fixed">固定價格或費率</option>
+                <option value="unknown">尚未確認</option>
+              </select>
+            </div>
+          </div>
+          <section class="review-panel">
+            <h5>是否可能涉及評選或審查程序</h5>
+            <ul class="review-grid">
+              ${reviewProcedureOptions.map((option) => `
+                <li>
+                  <label>
+                    <input type="checkbox" value="${option.id}" data-price-review>
+                    <span>${option.label}</span>
+                  </label>
+                </li>
+              `).join("")}
+            </ul>
+          </section>
+          <div class="price-result" data-price-result aria-live="polite"></div>
+        </section>
+      `;
+    }
+
+    function renderTenderTool() {
+      return `
+        <section class="tender-tool" aria-labelledby="tenderToolTitle">
+          <div class="tender-head">
+            <div>
+              <h4 id="tenderToolTitle">招標方式初步提示</h4>
+              <p class="tender-note">本區只提供可能程序提醒，不作成招標方式決定，不取代機關簽核、採購專業判斷或主管機關解釋。</p>
+              <p class="tender-local-note">地方政府或所屬機關學校如另有未達公告金額採購相關規定，應併同地方主管機關規定及機關內部程序確認。</p>
+            </div>
+            <span class="tag is-risk">可能程序提醒</span>
+          </div>
+          <div class="tender-form">
+            <div class="tender-field">
+              <label for="tenderTier">金額級距</label>
+              <select id="tenderTier" data-tender-tier>
+                <option value="small">小額採購</option>
+                <option value="belowAnnouncement">逾小額未達公告金額</option>
+                <option value="announcement">公告金額以上未達查核金額</option>
+                <option value="audit">查核金額以上</option>
+              </select>
+            </div>
+            <div class="tender-field">
+              <label for="tenderType">採購性質</label>
+              <select id="tenderType" data-tender-type>
+                <option value="工程">工程</option>
+                <option value="財物">財物</option>
+                <option value="勞務">勞務</option>
+              </select>
+            </div>
+          </div>
+          <div class="special-panel">
+            <p class="special-title">是否可能有特殊情形</p>
+            <ul class="special-grid">
+              ${tenderSpecialOptions.map((option) => `
+                <li>
+                  <label>
+                    <input type="checkbox" value="${option.id}" data-tender-special>
+                    <span>${option.label}</span>
+                  </label>
+                </li>
+              `).join("")}
+            </ul>
+          </div>
+          <div class="tender-result" data-tender-result aria-live="polite"></div>
+        </section>
+      `;
+    }
+
+    const consistencyGroups = [
+      {
+        title: "一、金額一致性",
+        items: [
+          "簽呈金額是否與預算來源一致。",
+          "招標文件金額是否與核定預算一致。",
+          "契約金額是否與決標金額一致。",
+          "後續付款金額是否與契約及驗收結果一致。"
+        ]
+      },
+      {
+        title: "二、採購性質一致性",
+        items: [
+          "簽呈所列採購性質是否與招標文件一致。",
+          "工程、財物、勞務分類是否與實際履約內容一致。",
+          "若兼具工程、財物、勞務，是否已說明主要目的或預算占比。"
+        ]
+      },
+      {
+        title: "三、招標方式一致性",
+        items: [
+          "簽呈所核准招標方式是否與公告或邀標方式一致。",
+          "若採限制性招標，是否有明確法源依據與事實理由。",
+          "若採公開取得書面報價或企劃書，文件名稱與程序是否一致。"
+        ]
+      },
+      {
+        title: "四、履約期限一致性",
+        items: [
+          "簽呈、招標文件、契約之履約期限是否一致。",
+          "是否明確約定起算日。",
+          "是否有展延、分期或部分驗收安排。"
+        ]
+      },
+      {
+        title: "五、決標與評選資料一致性",
+        items: [
+          "決標原則是否與投標須知一致。",
+          "評審項目、配分、及格門檻是否前後一致。",
+          "評審紀錄是否能對應公告或招標文件內容。"
+        ]
+      },
+      {
+        title: "六、驗收與付款一致性",
+        items: [
+          "驗收方式是否與契約一致。",
+          "付款條件是否與契約、驗收紀錄一致。",
+          "保固、保證金、違約金等條款是否前後一致。"
+        ]
+      }
+    ];
+
+    function getConsistencyTotal() {
+      return consistencyGroups.reduce((total, group) => total + group.items.length, 0);
+    }
+
+    function renderConsistencyTool() {
+      const total = getConsistencyTotal();
+      let index = 0;
+      return `
+        <section class="consistency-tool" aria-labelledby="consistencyToolTitle">
+          <div class="consistency-head">
+            <div>
+              <h4 id="consistencyToolTitle">文件一致性快速檢查</h4>
+              <p class="consistency-note">這不是正式審查，不產生法律結論，只作為承辦人自我檢查提醒。</p>
+            </div>
+            <span class="consistency-count" data-consistency-count>已檢查 0 / 總項目 ${total}</span>
+          </div>
+          <div class="consistency-groups">
+            ${consistencyGroups.map((group) => `
+              <section class="consistency-group">
+                <h5>${group.title}</h5>
+                <ul class="check-list">
+                  ${group.items.map((item) => {
+                    index += 1;
+                    return `
+                      <li>
+                        <label>
+                          <input type="checkbox" data-consistency-check>
+                          <span>${item}</span>
+                        </label>
+                      </li>
+                    `;
+                  }).join("")}
+                </ul>
+              </section>
+            `).join("")}
+          </div>
+          <div class="consistency-status" data-consistency-status aria-live="polite">
+            <strong>完成度 0 / ${total}</strong>
+            仍有文件一致性項目尚未檢查，建議於公告、簽約或驗收前再次確認。
+          </div>
+        </section>
+      `;
+    }
+
+    function renderNav() {
+      navGroupsEl.innerHTML = processGroups.map((group) => `
+        <section class="nav-group" aria-label="${group.title}">
+          <h3 class="nav-title">${group.title}</h3>
+          ${group.steps.map((step) => `
+            <button class="step-link" type="button" data-step="${step.code}">
+              <span class="step-code">${step.code}</span>
+              <span class="step-name">${step.name}</span>
+            </button>
+          `).join("")}
+        </section>
+      `).join("");
+    }
+
+    function renderCards() {
+      cardsEl.innerHTML = processGroups.map((group) => `
+        <h2 class="section-marker">${group.title}</h2>
+        ${group.steps.map((step) => `
+          <article class="card" id="${step.code}">
+            <header class="card-head">
+              <div>
+                <span class="card-code">${step.code}</span>
+                <h3>${step.name}</h3>
+                <p class="summary">${step.summary}</p>
+              </div>
+              <div class="tags" aria-label="程序標籤">
+                ${step.tags.map((tag) => `<span class="${tagClass(step, tag)}">${tag}</span>`).join("")}
+              </div>
+            </header>
+            <div class="card-body">
+              <div class="fields">
+                <section class="field">
+                  <h4 class="field-title">查核重點</h4>
+                  <ul>${makeList(step.checks)}</ul>
+                </section>
+                <section class="field">
+                  <h4 class="field-title">高風險提醒</h4>
+                  <ul>${makeList(step.risks)}</ul>
+                </section>
+                <section class="field">
+                  <h4 class="field-title">常見文件</h4>
+                  <ul>${makeList(step.docs)}</ul>
+                </section>
+                <section class="field">
+                  <h4 class="field-title">承辦人自我檢查問題</h4>
+                  <ul>${makeList(step.questions)}</ul>
+                </section>
+                <section class="field full">
+                  <h4 class="field-title">法源依據</h4>
+                  <ul class="law-list">${makeLaws(step.laws)}</ul>
+                </section>
+            </div>
+              ${step.code === "P005" ? renderTenderTool() : ""}
+              ${step.code === "P002" ? renderClassificationTool() : ""}
+              ${step.code === "P003" ? renderAmountTool() : ""}
+              ${step.code === "P006" ? renderConsistencyTool() : ""}
+              ${step.code === "P007" ? renderPriceTool() : ""}
+              <button class="mobile-back" type="button" data-back>↑ 回到流程目錄</button>
+              <button class="menu-back" type="button" data-menu-back>↑ 回到選單</button>
+            </div>
+          </article>
+        `).join("")}
+      `).join("");
+    }
+
+    const amountThresholds = {
+      "工程": 50000000,
+      "財物": 50000000,
+      "勞務": 10000000
+    };
+
+    const amountMessages = {
+      small: {
+        level: "小額採購",
+        reminder: "屬小額採購範圍，仍應注意需求、比價或議價紀錄、驗收及付款憑證完整性。",
+        procedure: "可依小額採購相關規定與機關內部程序辦理，並保留估價、比價、議價、驗收與付款紀錄。",
+        nextSteps: ["P005｜招標方式初步選擇", "P006｜招標文件一致性檢查", "P012｜驗收、付款與結案歸檔"],
+        nextNote: "雖屬小額採購，仍應留意需求、詢價或議價紀錄、驗收及付款憑證完整性。"
+      },
+      belowAnnouncement: {
+        level: "逾小額未達公告金額",
+        reminder: "已逾小額採購，應注意未達公告金額採購招標辦法、公開取得書面報價或企劃書、限制性招標依據及文件留存。",
+        procedure: "常見方向包含公開取得三家以上廠商書面報價或企劃書，或依具體事由檢討限制性招標依據。",
+        nextSteps: ["P005｜招標方式初步選擇", "P006｜招標文件一致性檢查", "P008｜公告、邀標與等標期檢核"],
+        nextNote: "此級距常見風險為誤用小額採購、未留存報價或企劃書、限制性招標依據不足。"
+      },
+      announcement: {
+        level: "公告金額以上未達查核金額",
+        reminder: "已達公告金額，原則應依政府採購法辦理公告程序，並注意招標文件、等標期、開標審標決標及公告義務。",
+        procedure: "應檢核公告、招標文件、等標期、廠商資格、開標審標決標與決標公告等程序完整性。",
+        nextSteps: ["P005｜招標方式初步選擇", "P006｜招標文件一致性檢查", "P008｜公告、邀標與等標期檢核", "P009｜開標、審標與評審程序", "P010｜決標、議價與決標公告"],
+        nextNote: "已達公告金額，應特別留意公告程序、等標期、招標文件一致性、開標審標決標紀錄與公告義務。"
+      },
+      audit: {
+        level: "查核金額以上",
+        reminder: "已達查核金額，除公告程序外，應注意上級機關監辦、文件完整性、重大採購風險與內部簽核程序。",
+        procedure: "應提高內部審核密度，確認監辦、簽核、契約管理、履約變更與驗收付款文件均可追溯。",
+        nextSteps: ["P005｜招標方式初步選擇", "P006｜招標文件一致性檢查", "P007｜底價、預算與決標原則", "P008｜公告、邀標與等標期檢核", "P009｜開標、審標與評審程序", "P010｜決標、議價與決標公告", "P011｜簽約、履約管理與變更契約", "P012｜驗收、付款與結案歸檔"],
+        nextNote: "已達查核金額，除一般公告程序外，應注意監辦、重大採購風險、內部簽核層級與文件完整性。"
+      }
+    };
+
+    const amountRiskText = "請勿僅以金額判斷採購方式；仍須併同採購性質、需求內容、是否分批辦理、是否適用共同供應契約、限制性招標事由及主管機關規定綜合判斷。";
+
+    const riskSituations = [
+      {
+        title: "是否疑似分批辦理",
+        text: "若同一需求、同一目的、同一期間或可預期之採購被拆成多案辦理，應注意是否有規避公告金額或查核金額之疑慮。"
+      },
+      {
+        title: "是否僅以金額判斷採購方式",
+        text: "金額級距只是初步判斷，仍須併同採購性質、需求內容、履約方式、法定招標方式及主管機關規定綜合判斷。"
+      },
+      {
+        title: "是否適用共同供應契約",
+        text: "若採購標的屬共同供應契約項目，應先確認是否可依共同供應契約辦理，並留意機關內部請購與核准程序。"
+      },
+      {
+        title: "是否涉及限制性招標事由",
+        text: "若擬採限制性招標，應確認具體法源依據、事實理由與簽核文件，不宜只以便利、急迫或熟悉廠商作為理由。"
+      },
+      {
+        title: "是否涉及工程、財物、勞務混合",
+        text: "採購內容若兼具工程、財物、勞務性質，應檢視主要目的、預算占比及履約內容，避免分類錯誤影響招標方式與文件適用。"
+      },
+      {
+        title: "是否需上級機關或內部程序確認",
+        text: "達公告金額或查核金額以上案件，應特別注意機關內部簽核層級、監辦、公告、決標及後續履約驗收文件。"
+      }
+    ];
+
+    function formatAmount(value) {
+      return new Intl.NumberFormat("zh-TW").format(value);
+    }
+
+    function renderNextSteps(items) {
+      return renderStepGuidePills(items);
+    }
+
+    function renderAmountGuidance(type, amount, result) {
+      return `
+        <div class="amount-guidance">
+          <section class="amount-info-card" aria-label="判斷依據">
+            <h5>判斷依據</h5>
+            <ul class="basis-list">
+              <li><strong>採購性質</strong><span>${type}</span></li>
+              <li><strong>預算金額</strong><span>新臺幣 ${formatAmount(amount)} 元</span></li>
+              <li><strong>小額採購門檻</strong><span>${formatAmount(150000)} 元</span></li>
+              <li><strong>公告金額</strong><span>${formatAmount(1500000)} 元</span></li>
+              <li><strong>查核金額</strong><span>${type}：${formatAmount(result.auditAmount)} 元</span></li>
+              <li><strong>綜合判定結果</strong><span>${result.level}</span></li>
+            </ul>
+          </section>
+          <section class="amount-info-card" aria-label="建議下一步查看">
+            <h5>建議下一步查看</h5>
+            <ul class="next-list">${renderNextSteps(result.nextSteps)}</ul>
+            <p class="next-note">${result.nextNote}</p>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderRiskSituations() {
+      return `
+        <section class="risk-situations" aria-label="常見高風險情境提醒">
+          <h5>常見高風險情境提醒</h5>
+          <ul class="risk-list">
+            ${riskSituations.map((item) => `<li><strong>${item.title}：</strong>${item.text}</li>`).join("")}
+          </ul>
+        </section>
+      `;
+    }
+
+    function getAmountResult(type, amount) {
+      if (!Number.isFinite(amount) || amount <= 0) return null;
+      const auditAmount = amountThresholds[type] || amountThresholds["工程"];
+      if (amount <= 150000) return { ...amountMessages.small, className: "is-warning", auditAmount };
+      if (amount < 1500000) return { ...amountMessages.belowAnnouncement, className: "is-warning", auditAmount };
+      if (amount >= auditAmount) return { ...amountMessages.audit, className: "is-audit", auditAmount };
+      return { ...amountMessages.announcement, className: "", auditAmount };
+    }
+
+    function updateAmountTool() {
+      const typeInput = document.querySelector("[data-amount-type]");
+      const amountInput = document.querySelector("[data-amount-input]");
+      const resultEl = document.querySelector("[data-amount-result]");
+      if (!typeInput || !amountInput || !resultEl) return;
+
+      const type = typeInput.value;
+      const amount = Number(amountInput.value);
+      const result = getAmountResult(type, amount);
+
+      resultEl.className = "amount-result";
+      if (!result) {
+        resultEl.classList.add("is-warning");
+        resultEl.innerHTML = `
+          <p class="amount-result-title">請輸入有效的採購金額。</p>
+          <div class="amount-result-grid">
+            <p class="amount-result-item"><strong>對應提醒</strong>輸入後會顯示初步級距提醒。</p>
+            <p class="amount-result-item"><strong>可能適用程序提醒</strong>請併同採購性質與機關規定判斷。</p>
+            <p class="amount-result-item"><strong>高風險提醒</strong>${amountRiskText}</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (result.className) resultEl.classList.add(result.className);
+      resultEl.innerHTML = `
+        <p class="amount-result-title">${result.level}｜${type}｜${formatAmount(amount)} 元</p>
+        <div class="amount-result-grid">
+          <p class="amount-result-item"><strong>對應提醒</strong>${result.reminder}</p>
+          <p class="amount-result-item"><strong>可能適用程序提醒</strong>${result.procedure}</p>
+          <p class="amount-result-item"><strong>查核金額基準</strong>${type}採購查核金額為 ${formatAmount(result.auditAmount)} 元。</p>
+          <p class="amount-result-item"><strong>高風險提醒</strong>${amountRiskText}</p>
+        </div>
+        ${renderAmountGuidance(type, amount, result)}
+        ${renderRiskSituations()}
+      `;
+    }
+
+    function setupAmountTool() {
+      const typeInput = document.querySelector("[data-amount-type]");
+      const amountInput = document.querySelector("[data-amount-input]");
+      if (!typeInput || !amountInput) return;
+      typeInput.addEventListener("change", updateAmountTool);
+      amountInput.addEventListener("input", updateAmountTool);
+      updateAmountTool();
+    }
+
+    function updateConsistencyTool() {
+      const checks = Array.from(document.querySelectorAll("[data-consistency-check]"));
+      const countEl = document.querySelector("[data-consistency-count]");
+      const statusEl = document.querySelector("[data-consistency-status]");
+      if (!checks.length || !countEl || !statusEl) return;
+
+      const total = checks.length;
+      const checked = checks.filter((item) => item.checked).length;
+      countEl.textContent = `已檢查 ${checked} / 總項目 ${total}`;
+      statusEl.classList.toggle("is-complete", checked === total);
+      statusEl.innerHTML = checked === total
+        ? `<strong>完成度 ${checked} / ${total}</strong>本頁文件一致性項目已完成初步檢查，仍請依實際案件與機關程序辦理。`
+        : `<strong>完成度 ${checked} / ${total}</strong>仍有文件一致性項目尚未檢查，建議於公告、簽約或驗收前再次確認。`;
+    }
+
+    function setupConsistencyTool() {
+      const checks = document.querySelectorAll("[data-consistency-check]");
+      if (!checks.length) return;
+      checks.forEach((item) => item.addEventListener("change", updateConsistencyTool));
+      updateConsistencyTool();
+    }
+
+    function renderTenderChecks(items) {
+      return items.map((item) => `<li>${item}</li>`).join("");
+    }
+
+    function updateTenderTool() {
+      const tierInput = document.querySelector("[data-tender-tier]");
+      const typeInput = document.querySelector("[data-tender-type]");
+      const specialInputs = Array.from(document.querySelectorAll("[data-tender-special]"));
+      const resultEl = document.querySelector("[data-tender-result]");
+      if (!tierInput || !typeInput || !resultEl) return;
+
+      const guidance = tenderTierGuidance[tierInput.value] || tenderTierGuidance.small;
+      const selectedSpecials = specialInputs
+        .filter((input) => input.checked)
+        .map((input) => tenderSpecialOptions.find((option) => option.id === input.value))
+        .filter(Boolean);
+
+      resultEl.innerHTML = `
+        <h5>${guidance.label}｜${typeInput.value}</h5>
+        <div class="tender-result-grid">
+          <section class="tender-result-card">
+            <h6>可能程序提醒</h6>
+            <p>${guidance.reminder}</p>
+          </section>
+          <section class="tender-result-card">
+            <h6>需再確認事項</h6>
+            <ul>${renderTenderChecks(guidance.checks)}</ul>
+          </section>
+        </div>
+        <section class="special-reminders">
+          <h6>特殊情形提醒</h6>
+          ${selectedSpecials.length
+            ? `<ul>${selectedSpecials.map((option) => `<li>${option.reminder}</li>`).join("")}</ul>`
+            : `<p class="next-note">尚未勾選特殊情形；若案件具有特殊事由，請勾選後再檢視對應提醒。</p>`}
+        </section>
+      `;
+    }
+
+    function setupTenderTool() {
+      const tierInput = document.querySelector("[data-tender-tier]");
+      const typeInput = document.querySelector("[data-tender-type]");
+      const specialInputs = document.querySelectorAll("[data-tender-special]");
+      if (!tierInput || !typeInput) return;
+      tierInput.addEventListener("change", updateTenderTool);
+      typeInput.addEventListener("change", updateTenderTool);
+      specialInputs.forEach((input) => input.addEventListener("change", updateTenderTool));
+      updateTenderTool();
+    }
+
+    function updatePriceTool() {
+      const tierInput = document.querySelector("[data-price-tier]");
+      const awardInput = document.querySelector("[data-price-award]");
+      const reviewInputs = Array.from(document.querySelectorAll("[data-price-review]"));
+      const resultEl = document.querySelector("[data-price-result]");
+      if (!tierInput || !awardInput || !resultEl) return;
+
+      const tier = priceTierGuidance[tierInput.value] || priceTierGuidance.small;
+      const award = awardPrincipleGuidance[awardInput.value] || awardPrincipleGuidance.unknown;
+      const selectedReviews = reviewInputs
+        .filter((input) => input.checked)
+        .map((input) => reviewProcedureOptions.find((option) => option.id === input.value))
+        .filter(Boolean);
+
+      resultEl.innerHTML = `
+        <section class="price-result-card">
+          <h5>一、預算與底價提醒</h5>
+          <p>${tier.reminder}</p>
+        </section>
+        <section class="price-result-card">
+          <h5>二、決標原則提醒</h5>
+          <p>${award.reminder}</p>
+        </section>
+        <section class="price-result-card">
+          <h5>三、評選或審查程序提醒</h5>
+          ${selectedReviews.length
+            ? `<ul>${selectedReviews.map((option) => `<li>${option.reminder}</li>`).join("")}</ul>`
+            : `<p>若本案不涉及評選或審查程序，仍應確認決標原則、預算金額、底價或價格合理性資料與招標文件一致。</p>`}
+        </section>
+        <section class="price-result-card is-risk">
+          <h5>四、高風險一致性提醒</h5>
+          <ul>${priceRiskItems.map((item) => `<li>${item}</li>`).join("")}</ul>
+        </section>
+      `;
+    }
+
+    function setupPriceTool() {
+      const tierInput = document.querySelector("[data-price-tier]");
+      const awardInput = document.querySelector("[data-price-award]");
+      const reviewInputs = document.querySelectorAll("[data-price-review]");
+      if (!tierInput || !awardInput) return;
+      tierInput.addEventListener("change", updatePriceTool);
+      awardInput.addEventListener("change", updatePriceTool);
+      reviewInputs.forEach((input) => input.addEventListener("change", updatePriceTool));
+      updatePriceTool();
+    }
+
+    function getUniqueLeader(values) {
+      const entries = Object.entries(values).sort((a, b) => b[1] - a[1]);
+      if (!entries.length || entries[0][1] <= 0) return null;
+      if (entries[1] && entries[0][1] === entries[1][1]) return null;
+      return entries[0][0];
+    }
+
+    function getClassificationLabel(key) {
+      return classificationGroups.find((group) => group.key === key)?.label || "混合採購";
+    }
+
+    function renderStepPills(items) {
+      return renderStepGuidePills(items);
+    }
+
+    function updateClassificationTool() {
+      const clueInputs = Array.from(document.querySelectorAll("[data-classification-clue]"));
+      const budgetInputs = Array.from(document.querySelectorAll("[data-classification-budget]"));
+      const resultEl = document.querySelector("[data-classification-result]");
+      if (!clueInputs.length || !budgetInputs.length || !resultEl) return;
+
+      const counts = { engineering: 0, property: 0, service: 0 };
+      clueInputs.forEach((input) => {
+        if (input.checked && counts[input.value] !== undefined) counts[input.value] += 1;
+      });
+
+      const budgets = { engineering: 0, property: 0, service: 0 };
+      budgetInputs.forEach((input) => {
+        const value = Number(input.value);
+        budgets[input.dataset.classificationBudget] = Number.isFinite(value) && value > 0 ? value : 0;
+      });
+
+      const totalClues = Object.values(counts).reduce((sum, value) => sum + value, 0);
+      const totalBudget = Object.values(budgets).reduce((sum, value) => sum + value, 0);
+      const clueLeader = getUniqueLeader(counts);
+      const budgetLeader = totalBudget > 0 ? getUniqueLeader(budgets) : null;
+      const direction = clueLeader && budgetLeader && clueLeader === budgetLeader ? clueLeader : "mixed";
+      const hasInput = totalClues > 0 || totalBudget > 0;
+
+      const percentText = (key) => totalBudget > 0 ? `${((budgets[key] / totalBudget) * 100).toFixed(1)}%` : "尚未輸入";
+      const highestBudgetText = totalBudget > 0
+        ? (budgetLeader ? getClassificationLabel(budgetLeader) : "無明顯最高")
+        : "尚未輸入";
+
+      let prompt = "請先勾選採購內容特徵，或輸入工程、財物、勞務預估金額，以取得分類提示。";
+      if (hasInput && direction !== "mixed") {
+        prompt = `目前線索較集中於【${getClassificationLabel(direction)}】，可作為初步分類方向；仍應回到需求目的、契約內容、履約方式與機關簽核綜合判斷。`;
+      } else if (hasInput) {
+        prompt = "目前線索呈現混合採購特徵，建議檢視主要目的、預算占比、契約約定及履約內容，避免僅以單一因素判斷。";
+      }
+
+      const budgetNote = totalBudget > 0
+        ? "<p>採購兼有工程、財物、勞務二種以上性質且難以認定歸屬時，應注意其性質所占預算金額比率，並配合需求目的與履約內容判斷。</p>"
+        : "";
+
+      const nextKey = hasInput && direction !== "mixed" ? direction : "mixed";
+      const nextIntro = nextKey === "mixed"
+        ? "呈現混合採購或資訊不足時，建議查看下列流程，並特別確認招標文件、契約、履約項目與預算占比是否一致。"
+        : `若初步偏向${getClassificationLabel(nextKey)}，建議優先查看下列流程。`;
+
+      resultEl.innerHTML = `
+        <div class="classification-summary">
+          <section class="classification-result">
+            <h5>分類線索統計</h5>
+            <p>工程線索勾選數：${counts.engineering}</p>
+            <p>財物線索勾選數：${counts.property}</p>
+            <p>勞務線索勾選數：${counts.service}</p>
+          </section>
+          <section class="classification-result">
+            <h5>預算占比</h5>
+            <p>工程占比：${percentText("engineering")}</p>
+            <p>財物占比：${percentText("property")}</p>
+            <p>勞務占比：${percentText("service")}</p>
+            <p>目前占比最高者：${highestBudgetText}</p>
+            ${totalBudget > 0 ? `<p>三類合計：新臺幣 ${formatAmount(totalBudget)} 元</p>` : ""}
+          </section>
+          <section class="classification-result ${direction === "mixed" ? "is-mixed" : ""}">
+            <h5>初步提示</h5>
+            <p>${prompt}</p>
+            ${budgetNote}
+          </section>
+        </div>
+        <section class="classification-result ${nextKey === "mixed" ? "is-mixed" : ""}">
+          <h5>建議下一步查看</h5>
+          <p>${nextIntro}</p>
+          <ul>${renderStepPills(classificationNextSteps[nextKey])}</ul>
+        </section>
+        <section class="classification-risk">
+          <h5>高風險提醒</h5>
+          <ul>${classificationRiskItems.map((item) => `<li>${item}</li>`).join("")}</ul>
+        </section>
+      `;
+    }
+
+    function setupClassificationTool() {
+      const clueInputs = document.querySelectorAll("[data-classification-clue]");
+      const budgetInputs = document.querySelectorAll("[data-classification-budget]");
+      if (!clueInputs.length && !budgetInputs.length) return;
+      clueInputs.forEach((input) => input.addEventListener("change", updateClassificationTool));
+      budgetInputs.forEach((input) => input.addEventListener("input", updateClassificationTool));
+      updateClassificationTool();
+    }
+
+    function setActive(code) {
+      document.querySelectorAll(".step-link").forEach((link) => {
+        const isActive = link.dataset.step === code;
+        link.classList.toggle("is-active", isActive);
+        link.toggleAttribute("aria-current", isActive);
+      });
+    }
+
+    function openCollapsedParents(element) {
+      let parent = element.parentElement;
+      while (parent) {
+        if (parent.tagName === "DETAILS") parent.open = true;
+        parent = parent.parentElement;
+      }
+    }
+
+    function goInternalTarget(target) {
+      if (!target) return;
+      const isProcessStep = /^P\d{3}$/.test(target);
+      const targetEl = document.getElementById(target);
+      if (!targetEl) return;
+      openCollapsedParents(targetEl);
+
+      if (isProcessStep) {
+        setActive(target);
+        const isMobile = window.matchMedia("(max-width: 760px)").matches;
+        targetEl.scrollIntoView({
+          behavior: "smooth",
+          block: isMobile ? "start" : "nearest"
+        });
+        return;
+      }
+
+      targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    renderNav();
+    renderCards();
+    setupDocumentPacks();
+    setupMemoPrompts();
+    setupMemoPriorityHints();
+    setupMemoChecklist();
+    setupMemoDraftPreview();
+    setupAmountTool();
+    setupConsistencyTool();
+    setupTenderTool();
+    setupPriceTool();
+    setupClassificationTool();
+    setActive("P001");
+
+    document.addEventListener("click", (event) => {
+      const guideButton = event.target.closest("[data-internal-target]");
+      if (guideButton) {
+        event.preventDefault();
+        goInternalTarget(guideButton.dataset.internalTarget);
+        return;
+      }
+
+      const backButton = event.target.closest("[data-back]");
+      if (backButton) {
+        document.getElementById("processNav").scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+
+      const menuButton = event.target.closest("[data-menu-back]");
+      if (menuButton) {
+        goInternalTarget("document-packs");
+      }
+    });
+
+    document.querySelectorAll(".step-link").forEach((link) => {
+      link.addEventListener("click", () => goInternalTarget(link.dataset.step));
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible) setActive(visible.target.id);
+    }, {
+      root: null,
+      threshold: [0.22, 0.42, 0.64],
+      rootMargin: "-8% 0px -55% 0px"
+    });
+
+    document.querySelectorAll(".card").forEach((card) => observer.observe(card));
+  </script>
+</body>
+</html>
